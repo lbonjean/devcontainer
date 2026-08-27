@@ -29,7 +29,18 @@
     },
     "ghcr.io/devcontainers/features/powershell": {
       "installAsRoot": false,
-      "version": "7.4.7"
+      "version": "7.4.7",
+      "modules": [
+        "PowerShellGet",
+        "PSReadLine",
+        "Az.Accounts",
+        "Microsoft.graph.Authentication",
+        "PnP.PowerShell",
+        "Pester"
+        //                                       "microsoft.graph",
+        //                                      "Az.Accounts",
+        //                                      "PnP.PowerShell"
+      ]
     },
     "ghcr.io/devcontainers/features/dotnet:2.2.2": {
       "version": "lts",
@@ -68,8 +79,8 @@
         "davidanson.vscode-markdownlint",
         "esbenp.prettier-vscode",
         "mechatroner.rainbow-csv",
-        "openai.chatgpt",
-        "github.copilot-chat"
+        "openai.chatgpt"
+       // "github.copilot-chat"
       ]
     }
   }
