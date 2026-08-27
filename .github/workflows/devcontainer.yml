@@ -6,9 +6,6 @@ on:
       - .devcontainer/**
       - .github/workflows/devcontainer.yml
   pull_request:
-    paths:
-      - .devcontainer/**
-      - .github/workflows/devcontainer.yml
   schedule:
     - cron: "17 5 * * 1"
   workflow_dispatch:
