@@ -22,7 +22,10 @@ RUN apt-get update \
 RUN install -d -o vscode -g vscode \
         /commandhistory \
         /home/vscode/.config/powershell \
-    && printf '%s\n' '. /workspace/.devcontainer/pwshsettings.ps1' \
+    && printf '%s\n' '. /home/vscode/.config/powershell/pwshsettings.ps1' \
         > /home/vscode/.config/powershell/Microsoft.PowerShell_profile.ps1 \
     && chown vscode:vscode \
         /home/vscode/.config/powershell/Microsoft.PowerShell_profile.ps1
+
+COPY --chown=vscode:vscode .devcontainer/pwshsettings.ps1 \
+    /home/vscode/.config/powershell/pwshsettings.ps1
