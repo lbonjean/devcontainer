@@ -198,3 +198,24 @@ eigenlijk mag dat op de hele /home/vscode zijn
 - Added `/home/vscode/.codex` to image initialization and made the complete `/home/vscode` tree recursively owned by `vscode:vscode`.
 - This gives newly initialized named volumes the correct ownership; existing volumes retain their metadata and may require a one-time ownership repair.
 - Validation and commit results are reported in the final response.
+
+## Eighth follow-up user request (verbatim)
+
+# Context from my IDE setup:
+
+## Active file: .devcontainer/devcontainer.json
+
+## Open tabs:
+- devcontainer.json: .devcontainer/devcontainer.json
+- 2026-08-27-devcontainer-dockerfile.md: prompts/conversations/2026-08-27-devcontainer-dockerfile.md
+
+## My request:
+bij een push wordt de container image automatisch aangemaakt met een github action. is het een optie om de latest alleen maar aan te passen als het een push in  de main is?
+Ik zou graag hebben dat ik bij een push van een andere repo de image wel build zodat ik het eerst nig kan testen.
+
+## Eighth follow-up delivered response
+
+- Made image tag selection explicit in the workflow: every build receives an immutable `sha-<commit>` tag.
+- Pushes to any branch also receive a sanitized `branch-<branch>` tag so the image can be tested before merging.
+- Only a `push` event targeting `refs/heads/main` receives `latest`; scheduled and manually dispatched builds cannot update `latest`.
+- Validation and commit results are reported in the final response.
