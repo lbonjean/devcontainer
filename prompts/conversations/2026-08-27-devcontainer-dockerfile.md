@@ -363,3 +363,30 @@ ik heb net een push gedaan van de repo in deze branch, de push lukt, maar de act
 - Concluded that the Dockerfile and build were not the cause and recommended rerunning the failed jobs to republish the missing immutable SHA tag.
 - Could not independently query package versions because the current `gh` token lacks `read:packages`, and the local container does not include the Docker CLI for a public manifest check.
 - No workflow or application code changes were needed.
+
+## Sixteenth follow-up user request (verbatim)
+
+# Context from my IDE setup:
+
+## Active file: .devcontainer/devcontainer.json
+
+## Open tabs:
+- devcontainer.json: .devcontainer/devcontainer.json
+- .gitattributes: .gitattributes
+- devcontainer-lock.json: .devcontainer/devcontainer-lock.json
+- Dockerfile: .devcontainer/Dockerfile
+- TODO.md: prompts/TODO.md
+
+## My request:
+ik wil bij een pull request een vereiste zetten dat de build in de  in de branch van het pull request gelukt is.
+
+## Sixteenth follow-up delivered response
+
+- Added a `pull_request` trigger that runs for every pull request so the required check is always created.
+- Assigned the stable job/check name `Build dev container`.
+- Pull request runs build the complete Dev Container but skip GHCR authentication and use `push: never`; push, schedule, and manual runs retain `push: always`.
+- Created active repository ruleset `21657892` for the default branch requiring the `Build dev container` check specifically from the GitHub Actions app, with strict/up-to-date status checks enabled.
+- Preserved the existing repository-wide deletion and non-fast-forward protection ruleset.
+- Pushed workflow commits `9f63011` and `b8fdc23` to `dev-azf`; definitive push run `33083056460` completed successfully in 5m6s.
+- No open pull request existed for `dev-azf`, so the `pull_request` event itself could not yet be observed live.
+- Validation passed with `git diff --check` and GitHub's workflow parser/runtime. The run emitted a warning that `actions/checkout@v4` and `docker/login-action@v3` still target deprecated Node.js 20 and are currently forced onto Node.js 24.
