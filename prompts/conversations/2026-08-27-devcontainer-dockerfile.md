@@ -295,3 +295,27 @@ je mag het fixen en het feature ook enablen in devcontainer.json
 - Validation passed for Bash syntax, Feature JSON, official Dev Container CLI configuration parsing, and `git diff --check`.
 - A complete local Docker build remains unavailable because Docker is not installed in the current container.
 - Kept `errorlog.log` untracked and outside the commit.
+
+## Thirteenth follow-up user request (verbatim)
+
+# Context from my IDE setup:
+
+## Active file: .devcontainer/worker-feature/install.sh
+
+## Open tabs:
+- install.sh: .devcontainer/worker-feature/install.sh
+- devcontainer-feature.json: .devcontainer/worker-feature/devcontainer-feature.json
+- devcontainer-lock.json: .devcontainer/devcontainer-lock.json
+- devcontainer.json: .devcontainer/devcontainer.json
+- errorlog.log: errorlog.log
+
+## My request:
+hoe kan ik ervoor zorgen dat jij dit zelf kan testen?
+
+## Thirteenth follow-up delivered response
+
+- Recommended adding the official `docker-outside-of-docker` Feature so the Codex devcontainer receives the Docker CLI and forwards the host Docker socket.
+- Explained that this would allow full `devcontainer build --workspace-folder /workspace` validation from the active session.
+- Noted that Docker Desktop must be running before the devcontainer starts and that the container must be rebuilt once to add this capability.
+- Warned that access to the Docker socket grants broad control over the host Docker daemon.
+- Kept `errorlog.log` untracked and did not change the devcontainer configuration without an explicit implementation request.
