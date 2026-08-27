@@ -1,0 +1,12 @@
+{
+  "id": "worker-feature",
+  "version": "1.0.0",
+  "name": "Azure Functions PowerShell worker",
+  "description": "Builds and deploys the pinned PowerShell worker into Azure Functions Core Tools.",
+  "installsAfter": [
+    "ghcr.io/devcontainers/features/node",
+    "ghcr.io/devcontainers/features/powershell",
+    "ghcr.io/devcontainers/features/dotnet",
+    "ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools"
+  ]
+}

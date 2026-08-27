@@ -219,3 +219,27 @@ Ik zou graag hebben dat ik bij een push van een andere repo de image wel build z
 - Pushes to any branch also receive a sanitized `branch-<branch>` tag so the image can be tested before merging.
 - Only a `push` event targeting `refs/heads/main` receives `latest`; scheduled and manually dispatched builds cannot update `latest`.
 - Validation and commit results are reported in the final response.
+
+## Ninth follow-up user request (verbatim)
+
+# Context from my IDE setup:
+
+## Active file: .devcontainer/install-worker.sh
+
+## Open tabs:
+- install-worker.sh: .devcontainer/install-worker.sh
+- Dockerfile: .devcontainer/Dockerfile
+- devcontainer.yml: .github/workflows/devcontainer.yml
+- devcontainer.json: .devcontainer/devcontainer.json
+- 2026-08-27-devcontainer-dockerfile.md: prompts/conversations/2026-08-27-devcontainer-dockerfile.md
+
+## My request:
+die install-worker.sh zou eigenlijk mee in de container moeten ingebakken worden, die wordt nu als postcreate gedaan, kan dat eerder, want nu gebeurt dat na het pullen van de image lijkt me.
+
+## Ninth follow-up delivered response
+
+- Replaced the runtime `onCreateCommand` with a local Dev Container Feature.
+- The Feature installs worker version 4.0.4206 during the feature-composed image build and declares that Node, PowerShell, .NET, and Azure Functions Core Tools must be installed first.
+- Reworked the installer for build-time execution as root, strict error handling, temporary-directory cleanup, and dependency checks.
+- Static checks and official Dev Container CLI configuration parsing passed. A complete local image build was unavailable because the current devcontainer does not contain the Docker CLI.
+- Validation and commit results are reported in the final response.
