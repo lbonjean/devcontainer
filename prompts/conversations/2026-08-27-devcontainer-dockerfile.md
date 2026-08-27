@@ -274,3 +274,24 @@ her staat in de file errorlog.log (moet niet mee in de commit)
 - Diagnosed that the worker compilation succeeded, but deployment failed because `build.ps1` resolved its relative publish path from the local Feature directory rather than the extracted worker source directory.
 - Identified the required correction: change into the extracted source directory before invoking `pwsh ./build.ps1`.
 - Did not implement the fix because this request supplied the log for diagnosis rather than explicitly requesting a code change.
+
+## Twelfth follow-up user request (verbatim)
+
+# Context from my IDE setup:
+
+## Active file: .devcontainer/devcontainer.json
+
+## Open tabs:
+- devcontainer.json: .devcontainer/devcontainer.json
+- errorlog.log: errorlog.log
+
+## My request:
+je mag het fixen en het feature ook enablen in devcontainer.json
+
+## Twelfth follow-up delivered response
+
+- Re-enabled the local `./worker-feature` entry in `devcontainer.json`.
+- Changed the Feature installer to enter the extracted worker source directory before invoking `pwsh ./build.ps1`, fixing the relative deployment path seen in the host build log.
+- Validation passed for Bash syntax, Feature JSON, official Dev Container CLI configuration parsing, and `git diff --check`.
+- A complete local Docker build remains unavailable because Docker is not installed in the current container.
+- Kept `errorlog.log` untracked and outside the commit.

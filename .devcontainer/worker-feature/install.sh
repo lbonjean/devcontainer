@@ -18,4 +18,6 @@ work_dir="$(mktemp -d)"
 trap 'rm -rf "$work_dir"' EXIT
 wget --quiet --output-document="$work_dir/worker.tar.gz" "https://github.com/Azure/azure-functions-powershell-worker/archive/refs/tags/v${WORKER_VERSION}.tar.gz"
 tar --extract --gzip --file="$work_dir/worker.tar.gz" --directory="$work_dir"
-pwsh "$work_dir/azure-functions-powershell-worker-${WORKER_VERSION}/build.ps1" -bootstrap -deploy -coretoolsdir "$CORE_TOOLS_DIR"
+cd "$work_dir/azure-functions-powershell-worker-${WORKER_VERSION}"
+
+pwsh ./build.ps1 -bootstrap -deploy -coretoolsdir "$CORE_TOOLS_DIR"
