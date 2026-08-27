@@ -1,0 +1,8 @@
+# Lessons Learned
+
+- 2026-08-27: Devcontainer system packages belong in `.devcontainer/Dockerfile` so Docker can cache that layer. Keep user/workspace initialization in an idempotent lifecycle command.
+- 2026-08-27: When `workspaceFolder` is fixed, static shell-profile and named-volume mount-point setup can be baked into the Dockerfile. Keep upstream Features for tools whose installers handle version resolution, architectures, repositories, and environment integration.
+- 2026-08-27: A prebuilt image can be referenced directly with `image` and refreshed on container creation/rebuild via `runArgs: ["--pull=always"]`. This does not replace an already running container; users must rebuild it to consume a newly published tag.
+- 2026-08-27: Devcontainer creation and maintenance were moved out of `msponboarding` into `lbonjean/devcontainer`. The published image is `ghcr.io/lbonjean/devcontainer:latest`; keep future devcontainer build, Feature, update, and prebuilt-image changes in that repository.
+- 2026-08-27: `msponboarding` remains a consumer of the shared image through a minimal `.devcontainer/devcontainer.json` with `image` and `--pull=always`; image-owned shell configuration must be copied into the image rather than sourced from the consuming workspace.
+- 2026-08-27: Ensure `/home/vscode` is recursively owned by `vscode:vscode` at the end of image setup, and create named-volume mount points such as `.codex` before that ownership pass. New named volumes inherit the image metadata; existing volumes retain their current ownership.
