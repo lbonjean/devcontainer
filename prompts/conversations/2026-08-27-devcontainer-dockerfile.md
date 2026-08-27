@@ -390,3 +390,25 @@ ik wil bij een pull request een vereiste zetten dat de build in de  in de branch
 - Pushed workflow commits `9f63011` and `b8fdc23` to `dev-azf`; definitive push run `33083056460` completed successfully in 5m6s.
 - No open pull request existed for `dev-azf`, so the `pull_request` event itself could not yet be observed live.
 - Validation passed with `git diff --check` and GitHub's workflow parser/runtime. The run emitted a warning that `actions/checkout@v4` and `docker/login-action@v3` still target deprecated Node.js 20 and are currently forced onto Node.js 24.
+
+## Seventeenth follow-up user request (verbatim)
+
+# Context from my IDE setup:
+
+## Active file: .github/workflows/devcontainer.yml
+
+## Open tabs:
+- devcontainer.yml: .github/workflows/devcontainer.yml
+- devcontainer-lock.json: .devcontainer/devcontainer-lock.json
+- devcontainer-feature.json: .devcontainer/worker-feature/devcontainer-feature.json
+- devcontainer.json: .devcontainer/devcontainer.json
+- .gitattributes: .gitattributes
+
+## My request:
+ik krijg in het pull request een merge conflict
+
+## Seventeenth follow-up delivered response
+
+- Fetched and merged `origin/main` into `dev-azf` to resolve the conflict in pull request #3.
+- Resolved the only content conflict in `.github/workflows/devcontainer.yml` by retaining the pull-request condition that skips GHCR login and accepting Dependabot's `docker/login-action@v4` upgrade from `main`.
+- Accepted the automatically merged `actions/checkout@v7` upgrade from `main`.
