@@ -341,3 +341,25 @@ hou ergens bij dat dit nog moet gebeuren aub, we gaan dit nu niet doen.
 - Added `prompts/TODO.md` as a central list of open repository tasks.
 - Recorded adding `docker-outside-of-docker`, the intended full-build validation command, and the need to review host Docker socket access before enabling it.
 - Did not alter the devcontainer configuration and kept `errorlog.log` untracked.
+
+## Fifteenth follow-up user request (verbatim)
+
+# Context from my IDE setup:
+
+## Active file: .devcontainer/Dockerfile
+
+## Open tabs:
+- Dockerfile: .devcontainer/Dockerfile
+- TODO.md: prompts/TODO.md
+
+## My request:
+ik heb net een push gedaan van de repo in deze branch, de push lukt, maar de action die daarop getriggerd wordt, mislukt. ik ben met gh aangemeld, je kan de repo checken.
+
+## Fifteenth follow-up delivered response
+
+- Inspected GitHub Actions run `33079628748` for commit `d000676` on branch `dev-azf` using the authenticated GitHub CLI.
+- Confirmed that checkout, tag calculation, GHCR login, and the complete Dev Container build all succeeded.
+- Diagnosed the failure as a GHCR publish inconsistency: the first push for immutable tag `sha-d0006768ee0a43534f802ad43ac425e42276b307` ended with `unknown blob`, while the immediately following push of the same image as `branch-dev-azf` succeeded with digest `sha256:1a5c50e66b784b650e0d6dfea8e6dbc33e9402e43fe2b9c74d39abbdc4f9b354`.
+- Concluded that the Dockerfile and build were not the cause and recommended rerunning the failed jobs to republish the missing immutable SHA tag.
+- Could not independently query package versions because the current `gh` token lacks `read:packages`, and the local container does not include the Docker CLI for a public manifest check.
+- No workflow or application code changes were needed.
