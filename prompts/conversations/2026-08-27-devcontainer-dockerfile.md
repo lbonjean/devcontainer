@@ -319,3 +319,25 @@ hoe kan ik ervoor zorgen dat jij dit zelf kan testen?
 - Noted that Docker Desktop must be running before the devcontainer starts and that the container must be rebuilt once to add this capability.
 - Warned that access to the Docker socket grants broad control over the host Docker daemon.
 - Kept `errorlog.log` untracked and did not change the devcontainer configuration without an explicit implementation request.
+
+## Fourteenth follow-up user request (verbatim)
+
+# Context from my IDE setup:
+
+## Active file: .devcontainer/worker-feature/install.sh
+
+## Open tabs:
+- install.sh: .devcontainer/worker-feature/install.sh
+- devcontainer-feature.json: .devcontainer/worker-feature/devcontainer-feature.json
+- devcontainer-lock.json: .devcontainer/devcontainer-lock.json
+- devcontainer.json: .devcontainer/devcontainer.json
+- errorlog.log: errorlog.log
+
+## My request:
+hou ergens bij dat dit nog moet gebeuren aub, we gaan dit nu niet doen.
+
+## Fourteenth follow-up delivered response
+
+- Added `prompts/TODO.md` as a central list of open repository tasks.
+- Recorded adding `docker-outside-of-docker`, the intended full-build validation command, and the need to review host Docker socket access before enabling it.
+- Did not alter the devcontainer configuration and kept `errorlog.log` untracked.
