@@ -1,69 +1,81 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/powershell
 {
-	"name": "LB PowerShell Dev Container",
-	"build": {
-		"dockerfile": "Dockerfile",
-		"context": ".."
-	},
-	"features":
-		{
-		"ghcr.io/devcontainers/features/common-utils:2": {
-			"installZsh": "true",
-			"username": "vscode",
-			"upgradePackages": "false",
-			"nonFreePackages": "true"
-		},
-		// "ghcr.io/devcontainers/features/python:1": {
-		// 	"version": "3.11",
-		// 	"installTools": true
-		// },
-		"ghcr.io/devcontainers/features/node:1": {
-			"version": "lts",
-			"nodeGypDependencies": true
-		},
-		"ghcr.io/devcontainers/features/azure-cli:1": {
-			"version": "latest",
-			"installBicep": true,
-			"bicepVersion": "latest"
-		},
-		"ghcr.io/devcontainers/features/powershell": {
-			"installAsRoot": false,
-			"version": "lts"
-		}
-	},
-	"remoteUser": "vscode",
+  "name": "LB PowerShell Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": "true",
+      "username": "vscode",
+      "upgradePackages": "false",
+      "nonFreePackages": "true"
+    },
+    // "ghcr.io/devcontainers/features/python:1": {
+    // 	"version": "3.11",
+    // 	"installTools": true
+    // },
+    "ghcr.io/devcontainers/features/github-cli:1.1.1": {},
+    "ghcr.io/devcontainers/features/node:2.1.0": {
+      "version": "22.22.2",
+      "nodeGypDependencies": true
+    },
+    "ghcr.io/devcontainers/features/azure-cli:1": {
+      "version": "latest",
+      "installBicep": true,
+      "bicepVersion": "latest"
+    },
+    "ghcr.io/devcontainers/features/powershell": {
+      "installAsRoot": false,
+      "version": "7.4.7"
+    },
+    "ghcr.io/devcontainers/features/dotnet:2.2.2": {
+      "version": "lts",
+      "additionalVersions": "",
+      "dotnetRuntimeVersions": ""
+    },
+    "ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {},
+    "./worker-feature": {}
+  },
+  "remoteUser": "vscode",
 
-"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
-"workspaceFolder": "/workspace",
-"mounts": [
-	"source=${localWorkspaceFolderBasename}-history,target=/commandhistory,type=volume",
-	"source=${localWorkspaceFolderBasename}-codex,target=/home/vscode/.codex,type=volume"
-],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-history,target=/commandhistory,type=volume",
+    "source=${localWorkspaceFolderBasename}-codex,target=/home/vscode/.codex,type=volume"
+  ],
 
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      // Set *default* container specific settings.json values on container create.
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "pwsh"
+      },
 
-	"customizations": {
-		// Configure properties specific to VS Code.
-		"vscode": {
-			// Set *default* container specific settings.json values on container create.
-			"settings": {
-				"terminal.integrated.defaultProfile.linux": "pwsh"
-			},
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "ms-vscode.powershell",
+        "ms-azuretools.vscode-azurefunctions",
+        "ms-azuretools.vscode-azurestorage",
+        "ms-azuretools.vscode-docker",
+        "ms-azuretools.vscode-azure-github-copilot",
+        "azurite.azurite",
+        "ms-azuretools.vscode-bicep",
+        "davidanson.vscode-markdownlint",
+        "esbenp.prettier-vscode",
+        "mechatroner.rainbow-csv",
+        "openai.chatgpt",
+        "github.copilot-chat"
+      ]
+    }
+  }
 
-			// Add the IDs of extensions you want installed when the container is created.
-			"extensions": [
-				"ms-vscode.powershell",
-				"redhat.vscode-yaml",
-				"ms-vscode.vscode-github-actions",
-				"esbenp.prettier-vscode",
-				"ms-azuretools.vscode-bicep",
-				"openai.chatgpt"
-			]
-		}
-	},
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	//"postStartCommand": "pwsh -file /workspace/.devcontainer/poststart.ps1"
+  //"postStartCommand": "pwsh -file /workspace/.devcontainer/poststart.ps1"
 }
