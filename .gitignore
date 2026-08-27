@@ -1,0 +1,18 @@
+
+# Azure Functions artifacts
+# bin
+obj
+appsettings.json
+local.settings.json
+.env
+
+# Azurite artifacts
+azurite
+__blobstorage__
+__queuestorage__
+__azurite_db*__.json
+
+# JavaScript build artifacts
+node_modules/
+dist/
+
