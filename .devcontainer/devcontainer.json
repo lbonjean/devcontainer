@@ -37,7 +37,7 @@
         "Microsoft.graph.Authentication",
         "PnP.PowerShell",
         "Pester",
-        "ExchangeOnlineManagemen"
+        "ExchangeOnlineManagement"
       ]
     },
     "ghcr.io/devcontainers/features/dotnet:2.2.2": {
