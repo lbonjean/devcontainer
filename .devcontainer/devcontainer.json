@@ -36,10 +36,8 @@
         "Az.Accounts",
         "Microsoft.graph.Authentication",
         "PnP.PowerShell",
-        "Pester"
-        //                                       "microsoft.graph",
-        //                                      "Az.Accounts",
-        //                                      "PnP.PowerShell"
+        "Pester",
+        "ExchangeOnlineManagemen"
       ]
     },
     "ghcr.io/devcontainers/features/dotnet:2.2.2": {
