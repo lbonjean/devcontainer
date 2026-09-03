@@ -1,6 +1,6 @@
 {
   "name": "LB PowerShell Prebuilt Dev Container",
-  "image": "ghcr.io/lbonjean/devcontainer:latest",
+  "image": "ghcr.io/lbonjean/devcontainer:branch-dev-powershell-7.6.5",
   "runArgs": [
     "--pull=always"
   ],

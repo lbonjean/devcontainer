@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-readonly WORKER_VERSION="4.0.4206"
+readonly WORKER_VERSION="4.0.5362"
 readonly CORE_TOOLS_DIR="/usr/lib/azure-functions-core-tools"
 
 if [[ ! -x "$(command -v pwsh)" ]]; then

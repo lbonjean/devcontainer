@@ -27,9 +27,9 @@
       "installBicep": true,
       "bicepVersion": "latest"
     },
-    "ghcr.io/devcontainers/features/powershell": {
+    "ghcr.io/devcontainers/features/powershell:2.0.3": {
       "installAsRoot": false,
-      "version": "7.4.7",
+      "version": "7.6.5",
       "modules": [
         "PowerShellGet",
         "PSReadLine",
@@ -40,12 +40,12 @@
         "ExchangeOnlineManagement"
       ]
     },
-    "ghcr.io/devcontainers/features/dotnet:2.2.2": {
+    "ghcr.io/devcontainers/features/dotnet:2.5.0": {
       "version": "lts",
       "additionalVersions": "",
-      "dotnetRuntimeVersions": ""
+      "dotnetRuntimeVersions": "8.0"
     },
-    "ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {},
+    "ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {"version": "latest"},
     "./worker-feature": {}
   },
   "remoteUser": "vscode",
