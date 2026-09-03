@@ -29,7 +29,7 @@
     },
     "ghcr.io/devcontainers/features/powershell": {
       "installAsRoot": false,
-      "version": "7.4.7",
+      "version": "latest",
       "modules": [
         "PowerShellGet",
         "PSReadLine",
