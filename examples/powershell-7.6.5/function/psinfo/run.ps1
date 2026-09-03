@@ -13,8 +13,7 @@ $body+= "Available Modules: $($modules | ForEach-Object { "$($_.Name) v$($_.Vers
 $body+= "---------------------------------------------------`n"
 $envvars = Get-ChildItem env: 
 $body+= "Environment: $($envvars | Sort-Object Name | ForEach-Object { "$($_.Name)=$($_.Value)" } | Out-String)`n"
-$body+= "---------------------------------------------------`n"   
-$modules=Get-Module -ListAvailable | Select-Object Name, Version, ModuleBase | Sort-Object Name
+$body+= "---------------------------------------------------`n"
 $body+= "Request Query: $($Request.Query | ConvertTo-Json -Depth 10)`n"
 $body+= "Request Body: $($Request.Body | ConvertTo-Json -Depth 10)`n"
 $body+= "Request Headers: $($Request.Headers | ConvertTo-Json -Depth 10)`n"
