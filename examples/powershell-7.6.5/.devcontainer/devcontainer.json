@@ -1,0 +1,29 @@
+{
+  "name": "LB PowerShell Prebuilt Dev Container",
+  "image": "ghcr.io/lbonjean/devcontainer:branch-dev-powershell-7.6.5",
+  "runArgs": [
+    "--pull=always"
+  ],
+  "remoteUser": "vscode",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-history,target=/commandhistory,type=volume",
+    "source=${localWorkspaceFolderBasename}-codex,target=/home/vscode/.codex,type=volume"
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "pwsh"
+      },
+      "extensions": [
+        "ms-vscode.powershell",
+        "redhat.vscode-yaml",
+        "ms-vscode.vscode-github-actions",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-bicep",
+        "openai.chatgpt"
+      ]
+    }
+  }
+}
