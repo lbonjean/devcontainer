@@ -1,0 +1,5 @@
+# Only image inputs belong in the build context (no git history or local data).
+**
+!.devcontainer
+!.devcontainer/Dockerfile
+!.devcontainer/pwshsettings.ps1

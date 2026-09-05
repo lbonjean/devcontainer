@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - .devcontainer/**
+      - .dockerignore
       - .github/workflows/devcontainer.yml
   pull_request:
   schedule:
@@ -64,3 +65,4 @@ jobs:
           imageTag: ${{ steps.tags.outputs.tags }}
           cacheFrom: ${{ env.IMAGE_NAME }}
           push: ${{ github.event_name == 'pull_request' && 'never' || 'always' }}
+          runCmd: bash .devcontainer/test-image.sh
