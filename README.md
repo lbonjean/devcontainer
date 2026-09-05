@@ -90,10 +90,22 @@ docker run --rm --user vscode --mount type=bind,source="$(pwd)",target=/src,read
 ```
 
 The Dockerfile retains PowerShell 7.6.5 and its seven configured modules, Node
-22.22.2 with nvm/npm/Yarn/pnpm and native compilation dependencies, GitHub CLI,
+22.22.2 with nvm, the latest npm/Yarn/pnpm, Azure Static Web Apps CLI (`swa`),
+and native compilation dependencies, GitHub CLI,
 Azure CLI and Bicep, the latest .NET LTS SDK plus the .NET 8 runtime, and Azure
 Functions Core Tools with PowerShell worker 4.0.5362. The base already includes
 the `vscode` user, sudo, git and zsh supplied by common-utils.
+
+Oh My Posh is installed globally and initialized by the PowerShell profile.
+For prompt icons, select a Nerd Font in your local VS Code terminal settings.
+The Node installation upgrades npm first, installs the latest global packages,
+and updates their dependencies on each uncached build. Rebuild the devcontainer
+to use the updated tools; existing containers keep their installed versions.
+The build allows npm installation scripts for Yarn and SWA's native `keytar`
+dependency and includes libsecret plus its compilation prerequisites.
+See the [npm script policy](https://docs.npmjs.com/cli/install/),
+[SWA Linux troubleshooting](https://azure.github.io/static-web-apps-cli/docs/contribute/Troubleshooting/),
+and [Oh My Posh installation](https://ohmyposh.dev/docs/installation/linux).
 
 Versions are controlled by Dockerfile build arguments. Unpinned packages follow
 their upstream repositories when the corresponding layer is rebuilt; use
