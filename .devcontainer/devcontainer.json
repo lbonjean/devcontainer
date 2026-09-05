@@ -6,48 +6,9 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
-  "features": {
-    "ghcr.io/devcontainers/features/common-utils:2": {
-      "installZsh": "true",
-      "username": "vscode",
-      "upgradePackages": "false",
-      "nonFreePackages": "true"
-    },
-    // "ghcr.io/devcontainers/features/python:1": {
-    // 	"version": "3.11",
-    // 	"installTools": true
-    // },
-    "ghcr.io/devcontainers/features/github-cli:1.1.1": {},
-    "ghcr.io/devcontainers/features/node:2.1.0": {
-      "version": "22.22.2",
-      "nodeGypDependencies": true
-    },
-    "ghcr.io/devcontainers/features/azure-cli:1": {
-      "version": "latest",
-      "installBicep": true,
-      "bicepVersion": "latest"
-    },
-    "ghcr.io/devcontainers/features/powershell:2.0.3": {
-      "installAsRoot": false,
-      "version": "7.6.5",
-      "modules": [
-        "PowerShellGet",
-        "PSReadLine",
-        "Az.Accounts",
-        "Microsoft.graph.Authentication",
-        "PnP.PowerShell",
-        "Pester",
-        "ExchangeOnlineManagement"
-      ]
-    },
-    "ghcr.io/devcontainers/features/dotnet:2.5.0": {
-      "version": "lts",
-      "additionalVersions": "",
-      "dotnetRuntimeVersions": "8.0"
-    },
-    "ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {"version": "latest"},
-    "./worker-feature": {}
-  },
+  "runArgs": [
+    "--security-opt=seccomp=unconfined"
+  ],
   "remoteUser": "vscode",
 
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
