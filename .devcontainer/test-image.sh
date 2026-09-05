@@ -24,7 +24,17 @@ zsh -ic 'command -v node'
 gh --version
 az version
 bicep --version
-az bicep version
+# Check both shells: an exit code of zero alone misses Python startup warnings.
+for cli_shell in bash pwsh; do
+    if [[ "$cli_shell" = bash ]]; then
+        cli_output="$(bash -c 'az bicep version' 2>&1)"
+    else
+        cli_output="$(pwsh -NoLogo -NoProfile -Command 'az bicep version; exit $LASTEXITCODE' 2>&1)"
+    fi
+    printf '%s\n' "$cli_output"
+    [[ "$cli_output" == *'Bicep CLI version'* ]]
+    [[ "$cli_output" != *'SyntaxWarning'* ]]
+done
 dotnet --list-sdks
 dotnet --list-runtimes | grep -E '^Microsoft.NETCore.App 8\.'
 func --version
@@ -42,7 +52,6 @@ sudo -n test ! -d /root/.nuget
 test ! -d "$NVM_DIR/.cache"
 apt_cache_files="$(sudo -n find /var/lib/apt/lists /var/cache/apt/archives -type f ! -name lock -print -quit)"
 test -z "$apt_cache_files"
-test -z "$(find /opt/az -type d -name __pycache__ -print -quit)"
 pwsh -NoLogo -NoProfile -File "$repo_root/.devcontainer/test-image.ps1"
 pwsh -NoLogo -Command 'if ((Get-PSReadLineOption).HistorySavePath -ne "/commandhistory/ConsoleHost_history.txt") { throw "History profile was not loaded" }'
 

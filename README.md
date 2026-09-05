@@ -135,8 +135,9 @@ SDK and node-gyp dependencies remain available for development. A `.dockerignore
 limits the build context to image inputs. Docker's local build cache is separate
 from the published image and is intentionally left under the developer's control.
 
-Removing Azure CLI's shipped Python bytecode saves space, but can increase CLI
-startup time and expose upstream Python `SyntaxWarning` messages. The image smoke
-test checks that Azure CLI and Bicep still work without this cache.
+Azure CLI's shipped Python bytecode is retained to avoid recompilation on every
+invocation and upstream Python `SyntaxWarning` messages. This costs approximately
+281 MB in Azure CLI 2.90.0. The image smoke test checks `az bicep version` in both
+Bash and PowerShell and rejects Python syntax warnings.
 
 Dependabot checks the base image and GitHub Actions dependencies weekly.

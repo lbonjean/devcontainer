@@ -39,7 +39,6 @@ RUN apt-get update \
         -o /tmp/powershell.deb \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         azure-cli gh /tmp/powershell.deb \
-    && find /opt/az -type d -name __pycache__ -prune -exec rm -rf '{}' + \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
