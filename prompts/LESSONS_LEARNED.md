@@ -1,5 +1,7 @@
 # Lessons Learned
 
+- 2026-09-05: Correction to the earlier immutable `sha-<commit>` advice: the current workflow reuses this tag for scheduled/manual builds and reruns of the same commit. Such builds can have different upstream inputs. Use a unique run ID plus attempt for build tags, prevent release tag overwrites in the publishing workflow, and record the image digest for exact promotion/rollback; a commit tag alone does not guarantee immutable image content.
+
 - 2026-08-27: Devcontainer system packages belong in `.devcontainer/Dockerfile` so Docker can cache that layer. Keep user/workspace initialization in an idempotent lifecycle command.
 - 2026-08-27: When `workspaceFolder` is fixed, static shell-profile and named-volume mount-point setup can be baked into the Dockerfile. Keep upstream Features for tools whose installers handle version resolution, architectures, repositories, and environment integration.
 - 2026-08-27: A prebuilt image can be referenced directly with `image` and refreshed on container creation/rebuild via `runArgs: ["--pull=always"]`. This does not replace an already running container; users must rebuild it to consume a newly published tag.
