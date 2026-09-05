@@ -11,9 +11,58 @@ GitHub Container Registry. Consumers can add their own `features` alongside `ima
 ghcr.io/lbonjean/devcontainer:latest
 ```
 
-The GitHub Actions workflow publishes a new image when the dev container
-configuration changes and runs every Monday to incorporate upstream updates.
-Immutable `sha-<commit>` tags are also published.
+The GitHub Actions workflow builds and smoke-tests the image before publishing.
+It runs for image/workflow changes, every pull request (without publishing),
+every Monday on the default branch, and manually for a selected branch.
+Builds use `--pull --no-cache` to incorporate upstream updates.
+
+| Image tag | Updated by |
+| --- | --- |
+| `latest` | Successful builds on `main`, including scheduled/manual builds |
+| `staging` | Successful builds on the separate `staging` branch |
+| `stable` | Manual release or rollback |
+| `1.2.3` | Manual release; never reassigned to different content by the workflow |
+| `build-<run-id>-<attempt>` | Each published build, including reruns |
+| `branch-<branch>` | Successful builds of that branch (compatibility/testing) |
+
+`latest` means the newest tested main build, not necessarily a stable release.
+The image revision label records the Git commit; the build summary records the
+registry digest. Old `sha-<commit>` tags are no longer updated because rebuilding
+the same commit can produce different content.
+
+### Release and rollback
+
+After merging these workflows into `main`, create/push a `staging` branch that
+contains them. Develop/test there and merge approved code into `main` as usual.
+The branch must exist remotely for its push/manual builds to run.
+
+In **Actions → Release or roll back image → Run workflow**, select **main**:
+
+1. For a release, choose `release`, enter a version such as `1.2.3`, and select
+   source `staging`, `latest`, or `build-<run-id>-<attempt>`. Prefer the unique build
+   tag when approving a particular tested candidate. Versions have no `v` prefix:
+   MAJOR for incompatible changes, MINOR for additions, PATCH for fixes.
+2. The action resolves the source once and copies its exact registry manifest to
+   `1.2.3` and `stable`, without rebuilding. Repeating the same version/source is
+   safe; using an existing version for different content fails. If staging moved
+   since a previous attempt, use the original unique build tag when retrying.
+3. For rollback, choose `rollback` and an existing version such as `1.2.2`.
+   Only `stable` moves; `latest`, `staging`, and version tags remain unchanged.
+
+This versions container images; it does not create Git tags or GitHub Releases.
+Release/rollback jobs are serialized. GitHub concurrency may replace an older
+pending run, so check the selected run completed. Retain versioned images and
+their manifests in GHCR: rollback depends on them. This workflow deletes none.
+Tag immutability is enforced by this workflow, not against external registry writes.
+
+For daily use choose `ghcr.io/lbonjean/devcontainer:stable`. To pin a release use
+`:1.2.3`, or use `ghcr.io/lbonjean/devcontainer@sha256:<digest>` for exact content.
+After switching versions or rolling back, recreate the devcontainer with a fresh
+pull (for example `runArgs: ["--pull=always"]`); running containers do not change.
+Consumer-local Features are reapplied and are not covered by the image digest.
+
+References: [Docker manifest promotion](https://docs.docker.com/reference/cli/docker/buildx/imagetools/create/)
+and [GitHub manual workflows](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow).
 
 To use the image from another repository, start from the configuration in
 `examples/powershell-7.6.5/.devcontainer/devcontainer.json` (which uses a testing

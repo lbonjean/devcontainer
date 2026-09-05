@@ -2,10 +2,12 @@ name: Build and publish dev container
 
 on:
   push:
+    branches: ['**']
     paths:
       - .devcontainer/**
       - .dockerignore
-      - .github/workflows/devcontainer.yml
+      - .github/workflows/**
+      - .github/scripts/**
   pull_request:
   schedule:
     - cron: "17 5 * * 1"
@@ -17,7 +19,7 @@ permissions:
 
 concurrency:
   group: devcontainer-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build-and-push:
@@ -28,6 +30,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Test release safeguards
+        run: python3 .github/scripts/test_image_release.py
+
       - name: Set lowercase image name
         shell: bash
         run: echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
@@ -36,15 +41,16 @@ jobs:
         id: tags
         shell: bash
         run: |
-          tags="sha-${GITHUB_SHA}"
-
-          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+          tags="build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          if [[ "${GITHUB_REF}" == refs/heads/* ]]; then
             branch="${GITHUB_REF#refs/heads/}"
             branch_tag="$(printf '%s' "$branch" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9_.-]+/-/g' | cut -c1-100)"
             tags="${tags},branch-${branch_tag}"
 
             if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
               tags="${tags},latest"
+            elif [[ "${GITHUB_REF}" == "refs/heads/staging" ]]; then
+              tags="${tags},staging"
             fi
           fi
 
@@ -58,11 +64,28 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and publish dev container
-        uses: devcontainers/ci@v0.3
-        with:
-          imageName: ${{ env.IMAGE_NAME }}
-          imageTag: ${{ steps.tags.outputs.tags }}
-          cacheFrom: ${{ env.IMAGE_NAME }}
-          push: ${{ github.event_name == 'pull_request' && 'never' || 'always' }}
-          runCmd: bash .devcontainer/test-image.sh
+      - name: Build image
+        shell: bash
+        run: |
+          docker build --pull --no-cache --platform linux/amd64 \
+            --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
+            --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+            -f .devcontainer/Dockerfile -t devcontainer:test .
+
+      - name: Test image before publishing
+        shell: bash
+        run: docker run --rm --user vscode --mount "type=bind,source=${GITHUB_WORKSPACE},target=/src,readonly" devcontainer:test bash /src/.devcontainer/test-image.sh
+
+      - name: Publish tested image
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE_TAGS: ${{ steps.tags.outputs.tags }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra tags <<< "$IMAGE_TAGS"
+          for tag in "${tags[@]}"; do
+            docker tag devcontainer:test "${IMAGE_NAME}:${tag}"
+            docker push "${IMAGE_NAME}:${tag}"
+          done
+          docker buildx imagetools inspect "${IMAGE_NAME}:${tags[0]}" >> "$GITHUB_STEP_SUMMARY"

@@ -1,5 +1,7 @@
 # Lessons Learned
 
+- 2026-09-05: Image channel policy now supersedes the earlier push-only latest gate: successful main builds (push/schedule/manual) update latest, staging-branch builds update staging, and main-only manual release/rollback updates stable. Promote an existing registry digest with buildx imagetools create --prefer-index=false and verify the destination digest. Serialize version/stable mutations, reject an existing version with different content, and distinguish a missing manifest from authentication/network errors.
+
 - 2026-09-05: Correction to the earlier immutable `sha-<commit>` advice: the current workflow reuses this tag for scheduled/manual builds and reruns of the same commit. Such builds can have different upstream inputs. Use a unique run ID plus attempt for build tags, prevent release tag overwrites in the publishing workflow, and record the image digest for exact promotion/rollback; a commit tag alone does not guarantee immutable image content.
 
 - 2026-08-27: Devcontainer system packages belong in `.devcontainer/Dockerfile` so Docker can cache that layer. Keep user/workspace initialization in an idempotent lifecycle command.
