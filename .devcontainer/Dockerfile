@@ -21,7 +21,7 @@ ENV DOTNET_ROOT=/usr/share/dotnet \
 # Keep compilers/Python: nodeGypDependencies was enabled in the Node feature.
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        ca-certificates curl dnsutils g++ gnupg iproute2 iputils-ping \
+        bubblewrap ca-certificates curl dnsutils g++ gnupg iproute2 iputils-ping \
         libicu74 libssl3t64 libunwind8 make mtr-tiny net-tools netcat-openbsd \
         nmap python3-minimal ripgrep tcpdump traceroute unzip wget whois xz-utils \
     && install -d -m 0755 /etc/apt/keyrings \
