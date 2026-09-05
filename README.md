@@ -93,8 +93,25 @@ The Dockerfile retains PowerShell 7.6.5 and its seven configured modules, Node
 22.22.2 with nvm, the latest npm/Yarn/pnpm, Azure Static Web Apps CLI (`swa`),
 and native compilation dependencies, GitHub CLI,
 Azure CLI and Bicep, the latest .NET LTS SDK plus the .NET 8 runtime, and Azure
-Functions Core Tools with PowerShell worker 4.0.5362. The base already includes
-the `vscode` user, sudo, git and zsh supplied by common-utils.
+Functions Core Tools with PowerShell worker 4.0.5362. The base is the official
+`ubuntu:26.04` (Ubuntu 26.04 LTS, Resolute Raccoon), directly from Ubuntu.
+The Dockerfile supplies the `vscode` user (UID/GID 1000), passwordless sudo,
+git, SSH client, zsh and UTF-8 locale explicitly. Azure CLI uses its native
+Ubuntu 26.04/resolute repository. PowerShell and Core Tools use official GitHub
+release downloads because they are absent from the resolute Microsoft feed;
+no older Ubuntu feeds are mixed in. Core Tools is pinned to 4.14.0 through
+`CORE_TOOLS_VERSION`.
+The image does not include the Microsoft base's Oh My Zsh customization;
+the existing PowerShell Oh My Posh profile is retained.
+
+Validated locally on Linux amd64: full image build, all tool/module smoke tests,
+and HTTP invocation through Core Tools 4.14.0 with PowerShell 7.6.5 in the worker.
+This verifies this development image; cloud deployment, authenticated Azure
+operations and other Functions languages are outside this test.
+The [Core Tools installation table](https://github.com/Azure/azure-functions-core-tools#linux)
+still lists Ubuntu through 24.04, so this test does not imply an explicit vendor
+support guarantee for 26.04. The standalone PowerShell installation is described
+in [Microsoft's Ubuntu instructions](https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu).
 
 Oh My Posh is installed globally and initialized by the PowerShell profile.
 For prompt icons, select a Nerd Font in your local VS Code terminal settings.
@@ -118,8 +135,9 @@ SDK and node-gyp dependencies remain available for development. A `.dockerignore
 limits the build context to image inputs. Docker's local build cache is separate
 from the published image and is intentionally left under the developer's control.
 
-Removing Azure CLI's shipped Python bytecode saves space, but can increase CLI
-startup time and expose upstream Python `SyntaxWarning` messages. The image smoke
-test checks that Azure CLI and Bicep still work without this cache.
+Azure CLI's shipped Python bytecode is retained to avoid recompilation on every
+invocation and upstream Python `SyntaxWarning` messages. This costs approximately
+281 MB in Azure CLI 2.90.0. The image smoke test checks `az bicep version` in both
+Bash and PowerShell and rejects Python syntax warnings.
 
 Dependabot checks the base image and GitHub Actions dependencies weekly.
