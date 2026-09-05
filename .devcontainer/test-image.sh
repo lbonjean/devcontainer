@@ -3,6 +3,13 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 test "$(id -un)" = vscode
+source /etc/os-release
+test "$ID" = ubuntu
+test "$VERSION_ID" = 26.04
+test "$(id -u)" = 1000
+test "$HOME" = /home/vscode
+sudo -n true
+locale -a | grep -i '^en_US.utf8$'
 test "$(node --version)" = v22.22.2
 npm --version
 yarn --version
@@ -45,6 +52,17 @@ app_dir="$(mktemp -d)"
 host_pid=''
 trap 'if [[ -n "$host_pid" ]]; then kill "$host_pid" 2>/dev/null || true; wait "$host_pid" 2>/dev/null || true; fi; rm -rf "$app_dir"' EXIT
 mkdir -p "$app_dir/HelloWorld"
+mkdir -p "$app_dir/WorkerVersion"
+cat > "$app_dir/WorkerVersion/function.json" <<'JSON'
+{"bindings":[{"authLevel":"anonymous","type":"httpTrigger","direction":"in","name":"Request","methods":["get"]},{"type":"http","direction":"out","name":"Response"}]}
+JSON
+cat > "$app_dir/WorkerVersion/run.ps1" <<'POWERSHELL'
+param($Request, $TriggerMetadata)
+Push-OutputBinding -Name Response -Value @{
+    StatusCode = 200
+    Body = $PSVersionTable.PSVersion.ToString()
+}
+POWERSHELL
 cp "$repo_root"/examples/powershell-7.6.5/function/HelloWorld/{run.ps1,function.json} "$app_dir/HelloWorld/"
 printf '%s\n' '{"version":"2.0","managedDependency":{"enabled":false}}' > "$app_dir/host.json"
 cd "$app_dir"
@@ -54,6 +72,16 @@ host_pid=$!
 for attempt in {1..90}; do
     if curl --silent --fail --max-time 2 'http://localhost:7079/api/HelloWorld?name=SmokeTest' > "$app_dir/response"; then
         grep -F 'Hello, SmokeTest.' "$app_dir/response"
+        if ! worker_version="$(curl --silent --show-error --fail --max-time 10 'http://localhost:7079/api/WorkerVersion')"; then
+            cat "$app_dir/host.log"
+            exit 1
+        fi
+        if [[ "$worker_version" != 7.6.* ]]; then
+            echo "Unexpected Functions PowerShell version: $worker_version"
+            cat "$app_dir/host.log"
+            exit 1
+        fi
+        echo "Functions PowerShell runtime: $worker_version"
         echo 'Image smoke tests passed.'
         exit 0
     fi
