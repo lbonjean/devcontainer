@@ -22,6 +22,13 @@ oh-my-posh version
 bash -ic 'test "$(type -t nvm)" = function && nvm current'
 zsh -ic 'command -v node'
 gh --version
+# Render real documentation: Ubuntu's placeholder man also exits successfully.
+test ! -e /etc/dpkg/dpkg.cfg.d/excludes
+git_help="$(GIT_PAGER=cat git -c help.format=man help commit)"
+[[ "$git_help" == *'GIT-COMMIT(1)'* ]]
+for manual in bash ls git sudo curl ssh zsh; do
+    man -w "$manual"
+done
 az version
 bicep --version
 # Check both shells: an exit code of zero alone misses Python startup warnings.

@@ -17,6 +17,20 @@ ENV DOTNET_ROOT=/usr/share/dotnet \
     NVM_SYMLINK_CURRENT=true \
     PATH=/usr/local/share/nvm/current/bin:/usr/share/dotnet:/home/vscode/.dotnet/tools:${PATH}
 
+# Retain documentation for existing and future packages, and restore the content
+# stripped from the Ubuntu base. man-db replaces Ubuntu's placeholder man script.
+RUN rm -f /etc/dpkg/dpkg.cfg.d/excludes \
+    && if [ "$(dpkg-divert --truename /usr/bin/man)" = /usr/bin/man.REAL ]; then \
+        rm -f /usr/bin/man; \
+        dpkg-divert --quiet --rename --remove /usr/bin/man; \
+    fi \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends --reinstall \
+        $(dpkg-query -W -f='${binary:Package}\n') \
+        man-db manpages manpages-dev less info \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 # Supply the development utilities explicitly when using the official Ubuntu base.
 # Keep compilers/Python: nodeGypDependencies was enabled in the Node feature.
 RUN apt-get update \
