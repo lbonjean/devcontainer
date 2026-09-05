@@ -1,0 +1,45 @@
+name: Release or roll back image
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Release a tested image or roll stable back
+        type: choice
+        options: [release, rollback]
+        required: true
+      version:
+        description: 'Release version (e.g. 1.2.3); existing version for rollback'
+        type: string
+        required: true
+      source:
+        description: 'Release source: staging, latest, or build-<run-id>-<attempt> (ignored for rollback)'
+        type: string
+        default: staging
+
+permissions:
+  contents: read
+  packages: write
+
+# Serialize all stable/version updates, including manual reruns.
+concurrency:
+  group: devcontainer-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Promote existing image without rebuilding
+        env:
+          OPERATION: ${{ inputs.operation }}
+          VERSION: ${{ inputs.version }}
+          SOURCE: ${{ inputs.source }}
+        run: bash .github/scripts/image-release.sh
