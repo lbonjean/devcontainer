@@ -6,6 +6,9 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
+  "runArgs": [
+    "--security-opt=seccomp=unconfined"
+  ],
   "remoteUser": "vscode",
 
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
