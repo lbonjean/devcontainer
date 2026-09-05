@@ -1,4 +1,8 @@
 $ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $true
+$promptInit = oh-my-posh init pwsh
+if (-not $promptInit) { throw 'Oh My Posh did not generate PowerShell initialization' }
+$promptInit | Invoke-Expression
 if ($PSVersionTable.PSVersion.ToString() -ne '7.6.5') {
     throw "Unexpected PowerShell version: $($PSVersionTable.PSVersion)"
 }

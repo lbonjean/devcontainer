@@ -1,5 +1,8 @@
 # Lessons Learned
 
+- 2026-09-05: Node 22.22.2 bundles npm 10.9.7. Updating that npm directly to 12.0.2 failed during self-replacement with missing `promise-retry`; `--no-fund` did not fix it. Install latest npm under a temporary prefix, then invoke that copy's npm-cli.js to update the global npm, and remove the temporary prefix in the same Docker layer.
+- 2026-09-05: npm 12 blocks dependency installation scripts by default. Global Yarn/SWA installs need the targeted `--allow-scripts=yarn,keytar` option, including during `npm update -g`. SWA's keytar needs libsecret at runtime; libsecret-1-dev and pkg-config support its native compilation fallback. Test requiring keytar, since `swa --version` alone does not verify the native dependency.
+
 - 2026-09-05: Image channel policy now supersedes the earlier push-only latest gate: successful main builds (push/schedule/manual) update latest, staging-branch builds update staging, and main-only manual release/rollback updates stable. Promote an existing registry digest with buildx imagetools create --prefer-index=false and verify the destination digest. Serialize version/stable mutations, reject an existing version with different content, and distinguish a missing manifest from authentication/network errors.
 
 - 2026-09-05: Correction to the earlier immutable `sha-<commit>` advice: the current workflow reuses this tag for scheduled/manual builds and reruns of the same commit. Such builds can have different upstream inputs. Use a unique run ID plus attempt for build tags, prevent release tag overwrites in the publishing workflow, and record the image digest for exact promotion/rollback; a commit tag alone does not guarantee immutable image content.

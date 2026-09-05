@@ -52,15 +52,26 @@ RUN curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh \
     && rm -rf /tmp/* /root/.dotnet /root/.nuget /root/.cache
 
 # Retain nvm, npm, Yarn and pnpm from the Node feature, including user writes.
-RUN install -d -o vscode -g vscode "$NVM_DIR" \
+# Bootstrap npm outside its global prefix: replacing the running npm 10 can
+# remove modules it still needs during installation cleanup.
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libsecret-1-dev pkg-config \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && install -d -o vscode -g vscode "$NVM_DIR" \
     && curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh" -o /tmp/install-nvm.sh \
     && runuser -u vscode -- env PROFILE=/dev/null METHOD=script bash /tmp/install-nvm.sh \
-    && runuser -u vscode -- bash -c 'source "$NVM_DIR/nvm.sh"; nvm install "$1" && nvm alias default "$1" && npm install -g yarn pnpm' -- "$NODE_VERSION" \
+    && runuser -u vscode -- bash -c 'set -e; source "$NVM_DIR/nvm.sh"; nvm install "$1" && nvm alias default "$1" && npm install --prefix /tmp/npm-bootstrap npm@latest && node /tmp/npm-bootstrap/node_modules/npm/bin/npm-cli.js install -g npm@latest && npm install -g --allow-scripts=yarn,keytar yarn@latest pnpm@latest @azure/static-web-apps-cli@latest && npm update -g --allow-scripts=yarn,keytar' -- "$NODE_VERSION" \
     && printf '%s\n' 'export NVM_DIR=/usr/local/share/nvm' \
         '[ ! -s "$NVM_DIR/nvm.sh" ] || . "$NVM_DIR/nvm.sh"' > /etc/profile.d/nvm.sh \
     && printf '\n%s\n' '. /etc/profile.d/nvm.sh' >> /etc/bash.bashrc \
     && printf '\n%s\n' '. /etc/profile.d/nvm.sh' >> /etc/zsh/zshrc \
     && rm -rf "$NVM_DIR/.cache" /home/vscode/.npm /home/vscode/.cache /tmp/*
+
+# Install the standalone prompt engine for all users (not the retired PS module).
+RUN curl -fsSL https://ohmyposh.dev/install.sh -o /tmp/install-oh-my-posh.sh \
+    && bash /tmp/install-oh-my-posh.sh -d /usr/local/bin \
+    && oh-my-posh version \
+    && rm -rf /tmp/* /root/.cache
 
 # A global Bicep binary avoids a second user-specific download via az bicep.
 RUN arch="$(dpkg --print-architecture)" \

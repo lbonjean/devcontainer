@@ -7,6 +7,11 @@ test "$(node --version)" = v22.22.2
 npm --version
 yarn --version
 pnpm --version
+swa --version
+npm ls -g --depth=0
+# Load SWA's native credential dependency without accessing a keyring.
+node -e 'require(process.argv[1])' "$(npm root -g)/@azure/static-web-apps-cli/node_modules/keytar"
+oh-my-posh version
 bash -ic 'test "$(type -t nvm)" = function && nvm current'
 zsh -ic 'command -v node'
 gh --version
