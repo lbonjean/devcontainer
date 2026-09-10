@@ -1,0 +1,8 @@
+{
+  "azureFunctions.deploySubpath": "function",
+  "azureFunctions.pythonVenv": ".venv",
+  "azureFunctions.projectLanguage": "Python",
+  "azureFunctions.projectLanguageModel": 2,
+  "azureFunctions.projectRuntime": "~4",
+  "debug.internalConsoleOptions": "neverOpen"
+}

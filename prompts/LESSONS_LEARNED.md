@@ -1,5 +1,7 @@
 # Lessons Learned
 
+- 2026-09-10: Azure Functions Python examples should use the Python v2 programming model in `function_app.py`, keep `azure-functions-worker` out of `requirements.txt`, and install app dependencies into a project `.venv`. The worker itself is managed by Core Tools/the platform; smoke tests should start `func` with `FUNCTIONS_WORKER_RUNTIME=python` and invoke an HTTP trigger.
+
 - 2026-09-10: Apple Silicon assessment: this image currently requires amd64 in the worker build, downloads an amd64 PowerShell deb and x64 Core Tools, and CI builds only linux/amd64. Official PowerShell 7.6.5 offers a Linux ARM64 tarball and Core Tools 4.14.0 offers a Linux ARM64 zip, but these assets alone do not validate the custom Functions PowerShell worker. Preserve actual HTTP worker smoke tests when adding ARM64; target Linux ARM64 even on macOS hosts.
 
 - 2026-09-05: Correction to the Azure CLI bytecode-removal advice below: deleting the shipped cache causes repeated upstream invalid-escape SyntaxWarnings for non-root `az bicep version`. Retain vendor bytecode despite the roughly 281 MB size cost. Reinstalling the same Azure CLI 2.90.0 package in a disposable Ubuntu 26.04 container restored warning-free output in Bash and PowerShell. Check output as well as exit status: the warning does not fail the command.
