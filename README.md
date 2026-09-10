@@ -1,6 +1,6 @@
 # Dev container
 
-Reusable VS Code development container for PowerShell and Azure development.
+Reusable VS Code development container for PowerShell, Python and Azure development.
 All development tools are installed by `.devcontainer/Dockerfile`; the project
 does not apply additional Dev Container Features. The image is published to
 GitHub Container Registry. Consumers can add their own `features` alongside `image`.
@@ -64,9 +64,10 @@ Consumer-local Features are reapplied and are not covered by the image digest.
 References: [Docker manifest promotion](https://docs.docker.com/reference/cli/docker/buildx/imagetools/create/)
 and [GitHub manual workflows](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow).
 
-To use the image from another repository, start from the configuration in
-`examples/powershell-7.6.5/.devcontainer/devcontainer.json` (which uses a testing
-branch tag), or use the following configuration. If the package is private,
+To use the image from another repository, start from the PowerShell Functions
+configuration in `examples/powershell-7.6.5/.devcontainer/devcontainer.json` or
+the Python Functions configuration in `examples/python/.devcontainer/devcontainer.json`.
+You can also use the following minimal configuration. If the package is private,
 authenticate first with `docker login ghcr.io`.
 
 ```json
@@ -89,11 +90,13 @@ docker build --progress=plain -f .devcontainer/Dockerfile -t devcontainer:local 
 docker run --rm --user vscode --mount type=bind,source="$(pwd)",target=/src,readonly devcontainer:local bash /src/.devcontainer/test-image.sh
 ```
 
-The Dockerfile retains PowerShell 7.6.5 and its seven configured modules, Node
-22.22.2 with nvm, the latest npm/Yarn/pnpm, Azure Static Web Apps CLI (`swa`),
+The Dockerfile retains PowerShell 7.6.5 and its seven configured modules, Python
+with pip, venv and development headers for Azure Functions Python worker projects,
+Node 22.22.2 with nvm, the latest npm/Yarn/pnpm, Azure Static Web Apps CLI (`swa`),
 and native compilation dependencies, GitHub CLI,
 Azure CLI and Bicep, the latest .NET LTS SDK plus the .NET 8 runtime, and Azure
-Functions Core Tools with PowerShell worker 4.0.5362. The base is the official
+Functions Core Tools with PowerShell worker 4.0.5362 and the bundled Python worker.
+The base is the official
 `ubuntu:26.04` (Ubuntu 26.04 LTS, Resolute Raccoon), directly from Ubuntu.
 The Dockerfile supplies the `vscode` user (UID/GID 1000), passwordless sudo,
 git, SSH client, zsh and UTF-8 locale explicitly. Azure CLI uses its native
@@ -105,9 +108,9 @@ The image does not include the Microsoft base's Oh My Zsh customization;
 the existing PowerShell Oh My Posh profile is retained.
 
 Validated locally on Linux amd64: full image build, all tool/module smoke tests,
-and HTTP invocation through Core Tools 4.14.0 with PowerShell 7.6.5 in the worker.
-This verifies this development image; cloud deployment, authenticated Azure
-operations and other Functions languages are outside this test.
+and HTTP invocation through Core Tools 4.14.0 with PowerShell 7.6.5 and Python in
+their Functions workers. This verifies this development image; cloud deployment
+and authenticated Azure operations are outside this test.
 The [Core Tools installation table](https://github.com/Azure/azure-functions-core-tools#linux)
 still lists Ubuntu through 24.04, so this test does not imply an explicit vendor
 support guarantee for 26.04. The standalone PowerShell installation is described

@@ -45,7 +45,11 @@ done
 dotnet --list-sdks
 dotnet --list-runtimes | grep -E '^Microsoft.NETCore.App 8\.'
 func --version
-for tool in git sudo zsh python3 make gcc g++ dig ip ping mtr nc nmap rg tcpdump traceroute wget whois; do
+python --version
+python -m pip --version
+python -m venv /tmp/python-venv-smoke
+rm -rf /tmp/python-venv-smoke
+for tool in git sudo zsh python python3 pip3 make gcc g++ dig ip ping mtr nc nmap rg tcpdump traceroute wget whois; do
     command -v "$tool"
 done
 test -w /commandhistory
@@ -62,47 +66,82 @@ test -z "$apt_cache_files"
 pwsh -NoLogo -NoProfile -File "$repo_root/.devcontainer/test-image.ps1"
 pwsh -NoLogo -Command 'if ((Get-PSReadLineOption).HistorySavePath -ne "/commandhistory/ConsoleHost_history.txt") { throw "History profile was not loaded" }'
 
-# Exercise the actual 7.6 Functions worker through an HTTP trigger, without
-# credentials, Azurite, managed dependencies or an extension-bundle download.
-app_dir="$(mktemp -d)"
+# Exercise the actual Functions workers through HTTP triggers, without
+# credentials, Azurite or an extension-bundle download.
+smoke_root="$(mktemp -d)"
 host_pid=''
-trap 'if [[ -n "$host_pid" ]]; then kill "$host_pid" 2>/dev/null || true; wait "$host_pid" 2>/dev/null || true; fi; rm -rf "$app_dir"' EXIT
-mkdir -p "$app_dir/HelloWorld"
-mkdir -p "$app_dir/WorkerVersion"
-cat > "$app_dir/WorkerVersion/function.json" <<'JSON'
+stop_host() {
+    if [[ -n "$host_pid" ]]; then
+        kill "$host_pid" 2>/dev/null || true
+        wait "$host_pid" 2>/dev/null || true
+        host_pid=''
+    fi
+}
+trap 'stop_host; rm -rf "$smoke_root"' EXIT
+
+powershell_app_dir="$smoke_root/powershell"
+mkdir -p "$powershell_app_dir/HelloWorld"
+mkdir -p "$powershell_app_dir/WorkerVersion"
+cat > "$powershell_app_dir/WorkerVersion/function.json" <<'JSON'
 {"bindings":[{"authLevel":"anonymous","type":"httpTrigger","direction":"in","name":"Request","methods":["get"]},{"type":"http","direction":"out","name":"Response"}]}
 JSON
-cat > "$app_dir/WorkerVersion/run.ps1" <<'POWERSHELL'
+cat > "$powershell_app_dir/WorkerVersion/run.ps1" <<'POWERSHELL'
 param($Request, $TriggerMetadata)
 Push-OutputBinding -Name Response -Value @{
     StatusCode = 200
     Body = $PSVersionTable.PSVersion.ToString()
 }
 POWERSHELL
-cp "$repo_root"/examples/powershell-7.6.5/function/HelloWorld/{run.ps1,function.json} "$app_dir/HelloWorld/"
-printf '%s\n' '{"version":"2.0","managedDependency":{"enabled":false}}' > "$app_dir/host.json"
-cd "$app_dir"
+cp "$repo_root"/examples/powershell-7.6.5/function/HelloWorld/{run.ps1,function.json} "$powershell_app_dir/HelloWorld/"
+printf '%s\n' '{"version":"2.0","managedDependency":{"enabled":false}}' > "$powershell_app_dir/host.json"
+cd "$powershell_app_dir"
 FUNCTIONS_WORKER_RUNTIME=powershell FUNCTIONS_WORKER_RUNTIME_VERSION=7.6 \
-    func start --port 7079 > "$app_dir/host.log" 2>&1 &
+    func start --port 7079 > "$powershell_app_dir/host.log" 2>&1 &
 host_pid=$!
+powershell_verified=''
 for attempt in {1..90}; do
-    if curl --silent --fail --max-time 2 'http://localhost:7079/api/HelloWorld?name=SmokeTest' > "$app_dir/response"; then
-        grep -F 'Hello, SmokeTest.' "$app_dir/response"
+    if curl --silent --fail --max-time 2 'http://localhost:7079/api/HelloWorld?name=SmokeTest' > "$powershell_app_dir/response"; then
+        grep -F 'Hello, SmokeTest.' "$powershell_app_dir/response"
         if ! worker_version="$(curl --silent --show-error --fail --max-time 10 'http://localhost:7079/api/WorkerVersion')"; then
-            cat "$app_dir/host.log"
+            cat "$powershell_app_dir/host.log"
             exit 1
         fi
         if [[ "$worker_version" != 7.6.* ]]; then
             echo "Unexpected Functions PowerShell version: $worker_version"
-            cat "$app_dir/host.log"
+            cat "$powershell_app_dir/host.log"
             exit 1
         fi
         echo "Functions PowerShell runtime: $worker_version"
+        powershell_verified=1
+        break
+    fi
+    if ! kill -0 "$host_pid" 2>/dev/null; then break; fi
+    sleep 1
+done
+if [[ -z "$powershell_verified" ]]; then
+    cat "$powershell_app_dir/host.log"
+    exit 1
+fi
+stop_host
+
+python_app_dir="$smoke_root/python"
+mkdir -p "$python_app_dir"
+cp "$repo_root"/examples/python/function/{function_app.py,requirements.txt} "$python_app_dir/"
+printf '%s\n' '{"version":"2.0"}' > "$python_app_dir/host.json"
+python -m venv "$python_app_dir/.venv"
+"$python_app_dir/.venv/bin/python" -m pip install --disable-pip-version-check --no-cache-dir -r "$python_app_dir/requirements.txt"
+cd "$python_app_dir"
+FUNCTIONS_WORKER_RUNTIME=python func start --port 7080 > "$python_app_dir/host.log" 2>&1 &
+host_pid=$!
+for attempt in {1..90}; do
+    if curl --silent --fail --max-time 2 'http://localhost:7080/api/HelloWorld?name=SmokeTest' > "$python_app_dir/response"; then
+        grep -F 'Hello, SmokeTest.' "$python_app_dir/response"
+        echo 'Functions Python runtime smoke test passed.'
         echo 'Image smoke tests passed.'
         exit 0
     fi
     if ! kill -0 "$host_pid" 2>/dev/null; then break; fi
     sleep 1
 done
-cat "$app_dir/host.log"
+cat "$python_app_dir/host.log"
 exit 1

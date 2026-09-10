@@ -38,7 +38,8 @@
         "davidanson.vscode-markdownlint",
         "esbenp.prettier-vscode",
         "mechatroner.rainbow-csv",
-        "openai.chatgpt"
+        "openai.chatgpt",
+        "anthropic.claude-code"
       ]
     }
   }

@@ -1,0 +1,3 @@
+# Do not include azure-functions-worker in this file.
+# The Python worker is managed by Azure Functions Core Tools and the platform.
+azure-functions
