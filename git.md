@@ -1,8 +1,9 @@
-# git en github ticks and tips
+# Git and Github ticks and tips
 
-## multiple accounts
+## Multiple accounts
 
-Make sure you have a recent version of gh check with gh --version. At the time of writing it was gh version 2.100.0 (2026-09-03). If you want to use multiple accounts, it is important that gh auth switch is supported.
+Make sure you have a recent version of gh check with gh --version. At the time of writing it was gh version 2.100.0 (2026-09-03).  
+If you want to use multiple accounts, it is important that gh auth switch is supported.
 
 - on the host log in with gh auth login with all your accounts (personal and enterprise)
 - these settings are inherited bij the devcontainer, but you will not see it with git auth status.  
@@ -16,7 +17,7 @@ git config --global --get-all credential.helper
 eg git clone <https://lbonjean@github.com/lbonjean/devcontainer.git>  
 The correct account wil be selected.
 
-## disable credentila inheritance
+## Disable credentials inheritance
 
 ``` text
 git config --global credential.helper ""
