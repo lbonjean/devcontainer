@@ -11,10 +11,13 @@ Variables:
 ## Cmd
 
 Do ths once for your user account
-setx GH_BROWSER "C:/users/c0000-luc/.config/lucsettings/firefox.cmd"
-setx BROWSER "\"C:/Program Files/Mozilla Firefox/firefox.exe\" -private-window %%s"
 
-Contents of the file:  
+```text
+setx GH_BROWSER "C:/users/c0000-luc/.config/lucsettings/firefox.cmd"
+setx BROWSER "\"C:/Program Files/Mozilla Firefox/firefox.exe\" -private-window %s"
+```
+
+Contents of the file firefox.cmd:  
 
 ```text
 @echo off
