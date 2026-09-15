@@ -10,7 +10,7 @@ Variables:
 
 ## Cmd
 
-Do ths once for your user account
+Do this once for your user account
 
 ```text
 setx GH_BROWSER "C:/users/c0000-luc/.config/mysettings/firefox.cmd"
@@ -20,8 +20,12 @@ setx BROWSER "\"C:/Program Files/Mozilla Firefox/firefox.exe\" -private-window %
 Contents of the file firefox.cmd:  
 
 ```text
-@echo off
-start "" "C:\Program Files\Mozilla Firefox\firefox.exe" -private-window "%*"
+mkdir "%USERPROFILE%\.config\mysettings" 2>nul
+(
+echo @echo off
+echo start "" "C:\Program Files\Mozilla Firefox\firefox.exe" -private-window "%*"
+) > "%USERPROFILE%\.config\mysettings\firefox.cmd"
+
 ```
 
 ## Powershell
