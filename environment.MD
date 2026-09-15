@@ -1,37 +1,38 @@
 # Environment configuration
 
 A properly configured environment is important and makes your live easier. Especially if using several identities.
-To separate all these identities I user firefox in private, but you can use whatever browser you want.
+To separate all these identities I use 'firefox in private', but you can use whatever browser you want.
 
 Variables:
 
 - BROWSER: used by az,gh,
-- GH_BROWSER: Overrides BROWSER if specigied for GH
+- GH_BROWSER: Overrides BROWSER (if specified) for GH
 
-## Cmd
+If you do not set these variables, your default browser will be used, all the accounts will end up in your profile.
 
-Do ths once for your user account
+## CMD
+
+Do this once for your user account in a CMD prompt local on your machine.  
+It will set some environment variables and creates a browser helper file.  
+The example uses firefox, you can use whatever browser you want.
 
 ```text
-setx GH_BROWSER "C:/users/c0000-luc/.config/lucsettings/firefox.cmd"
+setx GH_BROWSER "C:/users/c0000-luc/.config/mysettings/firefox.cmd"
 setx BROWSER "\"C:/Program Files/Mozilla Firefox/firefox.exe\" -private-window %s"
-```
 
-Contents of the file firefox.cmd:  
+mkdir "%USERPROFILE%\.config\mysettings" 2>nul
+(
+echo @echo off
+echo start "" "C:\Program Files\Mozilla Firefox\firefox.exe" -private-window "%*"
+) > "%USERPROFILE%\.config\mysettings\firefox.cmd"
 
-```text
-@echo off
-start "" "C:\Program Files\Mozilla Firefox\firefox.exe" -private-window "%*"
+more "%USERPROFILE%\.config\mysettings\firefox.cmd"
+
 ```
 
 ## Powershell
 
-Powershell inherits what is defined with setx, but the syntax is not allways compatible
-Add this to your profile (code $PROFILE)
-
-```text
-$env:BROWSER = '"C:\\Program Files\Mozilla Firefox\\firefox.exe" -private-window %s'
-```
+Powershell inherits/shares the enviroment with CMD.
 
 ## WSL / Linux
 
