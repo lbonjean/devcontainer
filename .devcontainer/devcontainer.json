@@ -7,7 +7,8 @@
     "context": ".."
   },
   "runArgs": [
-    "--security-opt=seccomp=unconfined"
+    // Allow all seccomp syscalls (unconfined), necessary for bubblewrap sandboxing.
+        "--security-opt=seccomp=unconfined"
   ],
   "remoteUser": "vscode",
 

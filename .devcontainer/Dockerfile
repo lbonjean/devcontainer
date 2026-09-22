@@ -37,7 +37,7 @@ RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         bubblewrap ca-certificates curl dnsutils g++ git gnupg iproute2 iputils-ping \
         libicu78 libssl3t64 libunwind8 locales make mtr-tiny net-tools netcat-openbsd \
-        nmap openssh-client procps python3-minimal ripgrep sudo tcpdump tmux traceroute unzip wget whois xz-utils zsh \
+        nmap openssh-client procps python3-minimal python3-yaml ripgrep sudo tcpdump tmux traceroute unzip wget whois xz-utils zsh \
     && install -d -m 0755 /etc/apt/keyrings \
     && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
         | gpg --dearmor --yes -o /etc/apt/keyrings/microsoft.gpg \
