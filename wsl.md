@@ -12,7 +12,11 @@ In order to avoid device code flow and accounts messing up I use firefox inpriva
 
 ### In .bashrc
 
+```text
 export BROWSER="$HOME/bin/firefox-private"
+eval $($HOME/wsl2-ssh-agent)
+```
+[wsl2-ssh-agent](https://github.com/mame/wsl2-ssh-agent): Tool to forward ssh agent from windows to wsl, so that it also gets forwarded into devcontainers if started with code .
 
 ### In $HOME/bin/firefox-private
 
