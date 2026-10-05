@@ -70,3 +70,40 @@ je mag niks aanpassen aan de docker file. Je mag wel pakketten installeren in de
   container; the new Feature needs a rebuild and host Docker.
 
 See [validation details](../../.development-history/2026-10-05-ubuntu2404/research/validation.md).
+
+## Follow-up: authenticated push and workflow inspection
+
+### User requests (verbatim)
+
+```text
+met de files ~/dotfiles/bin/set-gh-token.ps1 en/of ~/dotfiles/bin/set-gh-token.sh kan je het gh token goed zetten in de sessie waar je zit. Je mag pushen om de build na te kijken.
+```
+
+The user also supplied a read-only Dockerfile snapshot; no Dockerfile changes
+were requested or made.
+
+```text
+ik doe de powershell versie van het script, en dan toont het mij hoe ik aangelogd ben. In deze container, dus het lijkt wel te werken.
+```
+
+```text
+zeg laar wat ik van git/gh commandos moet uitvoeren en ik zal het regelen.
+```
+
+### Result and validation
+
+- The worktree was clean at the start, on ubuntu2404 tracking origin/ubuntu2404.
+- Inspected both token helpers and attempted each in the agent shell. Both failed
+  while retrieving the Git credential; no push occurred.
+- Verified that the configured VS Code helper and Node binary exist, but its
+  required REMOTE_CONTAINERS_IPC variable is absent from the agent environment.
+  This explains why authentication can work in the user's terminal and fail in
+  this execution environment. No credentials were printed or persisted.
+- The user chose to run the authenticated commands themselves. Provided
+  PowerShell commands to initialize the token in their session, push the current
+  branch, locate the push workflow for the exact HEAD SHA, watch its result and
+  retrieve failed-step logs if necessary. Workflow execution remains unverified
+  until those commands are run.
+- Dockerfile and implementation remain unchanged. Recorded this verified
+  environment limitation as a reusable lesson. Documentation-only follow-up
+  committed locally after whitespace validation; nothing pushed by the agent.
