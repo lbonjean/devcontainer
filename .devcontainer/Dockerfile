@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1
-FROM ubuntu:26.04 AS tools
+
+FROM ubuntu:24.04 AS tools
 
 USER root
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG POWERSHELL_VERSION=7.6.5
@@ -36,15 +38,15 @@ RUN rm -f /etc/dpkg/dpkg.cfg.d/excludes \
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         bubblewrap ca-certificates curl dnsutils g++ git gnupg iproute2 iputils-ping \
-        libicu78 libssl3t64 libunwind8 locales make mtr-tiny net-tools netcat-openbsd \
-        nmap openssh-client procps python3-minimal python3-yaml ripgrep sudo tcpdump tmux traceroute unzip wget whois xz-utils zsh \
+        libicu74 libssl3t64 libunwind8 locales make mtr-tiny net-tools netcat-openbsd \
+        nmap openssh-client procps python3-minimal python3-yaml python3-pip python3.12-venv ripgrep sudo tcpdump tmux traceroute unzip wget whois xz-utils zsh \
     && install -d -m 0755 /etc/apt/keyrings \
     && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
         | gpg --dearmor --yes -o /etc/apt/keyrings/microsoft.gpg \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
         -o /etc/apt/keyrings/githubcli.gpg \
     && chmod 0644 /etc/apt/keyrings/*.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ resolute main" \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ noble main" \
         > /etc/apt/sources.list.d/azure-cli.list \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli.gpg] https://cli.github.com/packages stable main" \
         > /etc/apt/sources.list.d/github-cli.list \
@@ -113,6 +115,7 @@ RUN arch="$(dpkg --print-architecture)" \
     && rm -rf /home/vscode/.cache /tmp/*
 
 FROM tools AS worker-build
+
 ARG WORKER_VERSION=4.0.5362
 
 # The legacy SDK used for packaging, build modules, sources and NuGet caches
@@ -128,6 +131,7 @@ RUN test "$(dpkg --print-architecture)" = amd64 \
     && cp -a src/bin/Release/net10.0/publish/. /worker-output/
 
 FROM tools AS final
+
 ARG CORE_TOOLS_VERSION=4.14.0
 
 # Use a build-stage mount so even a bundled 7.6 worker is replaced in the
@@ -156,10 +160,10 @@ RUN runuser -u vscode -- pwsh -NoLogo -NoProfile -Command \
         /root/.cache /tmp/* /var/tmp/*
 
 RUN install -d -o vscode -g vscode \
-        /commandhistory /home/vscode/.codex /home/vscode/.config/powershell 
+        /commandhistory /home/vscode/.codex /home/vscode/.config/powershell
     #&& printf '%s\n' '. /home/vscode/.config/powershell/pwshsettings.ps1' \
     #    > /home/vscode/.config/powershell/Microsoft.PowerShell_profile.ps1 \
-   # && chown vscode:vscode /home/vscode/.config/powershell/Microsoft.PowerShell_profile.ps1
+    # && chown vscode:vscode /home/vscode/.config/powershell/Microsoft.PowerShell_profile.ps1
 
 COPY --chown=vscode:vscode .devcontainer/pwshsettings.ps1 \
     /home/vscode/.config/powershell/pwshsettings.ps1

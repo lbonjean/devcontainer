@@ -1,8 +1,10 @@
 # Dev container
 
 Reusable VS Code development container for PowerShell and Azure development.
-All development tools are installed by `.devcontainer/Dockerfile`; the project
-does not apply additional Dev Container Features. The image is published to
+Image-owned development tools are installed by `.devcontainer/Dockerfile`.
+The local devcontainer adds the Docker-outside-of-Docker Feature for access to
+the host Docker daemon; this requires Docker on the host and a container rebuild.
+The published image does not include that Feature. The image is published to
 GitHub Container Registry. Consumers can add their own `features` alongside `image`.
 
 ## Published image
@@ -15,6 +17,17 @@ The GitHub Actions workflow builds and smoke-tests the image before publishing.
 It runs for image/workflow changes, every pull request (without publishing),
 every Monday on the default branch, and manually for a selected branch.
 Builds use `--pull --no-cache` to incorporate upstream updates.
+
+For a pull request from this repository, the workflow checks whether this same
+workflow has a completed, successful **push** run for the exact PR head SHA and
+branch. If so, it reuses that result and skips rebuilding and smoke-testing the
+image; the existing `Build dev container` check still succeeds and links the
+reused run in its summary. Workflow safeguard unit tests always run.
+New commits, missing/failed/in-progress push runs, and fork PRs receive the full
+PR build and smoke test. API errors fail explicitly rather than skipping tests.
+Push, scheduled and manual runs always build/test; PR runs never publish.
+Reusing a head-commit result intentionally does not test the synthetic merge
+commit or changes made only to the PR base branch.
 
 | Image tag | Updated by |
 | --- | --- |
@@ -89,31 +102,47 @@ docker build --progress=plain -f .devcontainer/Dockerfile -t devcontainer:local 
 docker run --rm --user vscode --mount type=bind,source="$(pwd)",target=/src,readonly devcontainer:local bash /src/.devcontainer/test-image.sh
 ```
 
+To test the already-built, running development container without rebuilding:
+
+```sh
+bash .devcontainer/test-image.sh
+python3 -m unittest discover -s .github/scripts -p 'test_*.py'
+```
+
+These existing Bash/Python scripts are retained. The image smoke test assumes a
+clean image: installing packages in a running container can make its package-cache
+checks fail. The separate release safeguard tests require `jq`, which is available
+on GitHub's Ubuntu runners but must be installed separately in this devcontainer.
+
 The Dockerfile retains PowerShell 7.6.5 and its seven configured modules, Node
 22.22.2 with nvm, the latest npm/Yarn/pnpm, Azure Static Web Apps CLI (`swa`),
 and native compilation dependencies, GitHub CLI,
 Azure CLI and Bicep, the latest .NET LTS SDK plus the .NET 8 runtime, and Azure
 Functions Core Tools with PowerShell worker 4.0.5362. The base is the official
-`ubuntu:26.04` (Ubuntu 26.04 LTS, Resolute Raccoon), directly from Ubuntu.
+`ubuntu:24.04` (Ubuntu 24.04 LTS, Noble Numbat), directly from Ubuntu.
 The Dockerfile supplies the `vscode` user (UID/GID 1000), passwordless sudo,
 git, SSH client, zsh and UTF-8 locale explicitly. Azure CLI uses its native
-Ubuntu 26.04/resolute repository. PowerShell and Core Tools use official GitHub
-release downloads because they are absent from the resolute Microsoft feed;
+Ubuntu 24.04/noble repository. PowerShell and Core Tools use official GitHub
+release downloads to retain the explicitly pinned versions;
 no older Ubuntu feeds are mixed in. Core Tools is pinned to 4.14.0 through
 `CORE_TOOLS_VERSION`.
 The image does not include the Microsoft base's Oh My Zsh customization;
 the existing PowerShell Oh My Posh profile is retained.
 
-Validated locally on Linux amd64: full image build, all tool/module smoke tests,
-and HTTP invocation through Core Tools 4.14.0 with PowerShell 7.6.5 in the worker.
+Validated in the running Ubuntu 24.04 Linux amd64 container: all tool/module smoke
+tests and HTTP invocation through Core Tools 4.14.0 with PowerShell 7.6.5 in the
+worker. The October 2026 validation tested the existing container, not a fresh
+Docker build.
 This verifies this development image; cloud deployment, authenticated Azure
 operations and other Functions languages are outside this test.
-The [Core Tools installation table](https://github.com/Azure/azure-functions-core-tools#linux)
-still lists Ubuntu through 24.04, so this test does not imply an explicit vendor
-support guarantee for 26.04. The standalone PowerShell installation is described
+See the [Core Tools installation table](https://github.com/Azure/azure-functions-core-tools#linux).
+The standalone PowerShell installation is described
 in [Microsoft's Ubuntu instructions](https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu).
 
-Oh My Posh is installed globally and initialized by the PowerShell profile.
+Oh My Posh is installed globally. The supplied PowerShell settings script
+initializes it when sourced; automatic profile loading is currently disabled in
+the Dockerfile. The smoke test exercises prompt initialization explicitly, not
+automatic history/profile loading.
 For prompt icons, select a Nerd Font in your local VS Code terminal settings.
 The Node installation upgrades npm first, installs the latest global packages,
 and updates their dependencies on each uncached build. Rebuild the devcontainer

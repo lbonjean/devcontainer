@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
+trap 'echo "Image test failed at line $LINENO: $BASH_COMMAND" >&2' ERR
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 test "$(id -un)" = vscode
 source /etc/os-release
 test "$ID" = ubuntu
-test "$VERSION_ID" = 26.04
+test "$VERSION_ID" = 24.04
 test "$(id -u)" = 1000
 test "$HOME" = /home/vscode
 sudo -n true
@@ -42,10 +43,13 @@ for cli_shell in bash pwsh; do
     [[ "$cli_output" == *'Bicep CLI version'* ]]
     [[ "$cli_output" != *'SyntaxWarning'* ]]
 done
-dotnet --list-sdks
+dotnet_sdks="$(dotnet --list-sdks)"
+printf '%s\n' "$dotnet_sdks"
+test -n "$dotnet_sdks"
 dotnet --list-runtimes | grep -E '^Microsoft.NETCore.App 8\.'
-func --version
-for tool in git sudo zsh python3 make gcc g++ dig ip ping mtr nc nmap rg tcpdump traceroute wget whois; do
+test "$(func --version)" = 4.14.0
+python3 -c 'import sys, yaml; assert sys.version_info >= (3, 10); assert yaml.safe_load("ready: true") == {"ready": True}'
+for tool in git sudo zsh python3 make gcc g++ dig ip ping mtr nc nmap rg tcpdump traceroute wget whois bwrap tmux; do
     command -v "$tool"
 done
 test -w /commandhistory
@@ -92,7 +96,7 @@ for attempt in {1..90}; do
             cat "$app_dir/host.log"
             exit 1
         fi
-        if [[ "$worker_version" != 7.6.* ]]; then
+        if [[ "$worker_version" != 7.6.5 ]]; then
             echo "Unexpected Functions PowerShell version: $worker_version"
             cat "$app_dir/host.log"
             exit 1
