@@ -5,7 +5,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 test "$(id -un)" = vscode
 source /etc/os-release
 test "$ID" = ubuntu
-test "$VERSION_ID" = 26.04
+test "$VERSION_ID" = 24.04
 test "$(id -u)" = 1000
 test "$HOME" = /home/vscode
 sudo -n true
