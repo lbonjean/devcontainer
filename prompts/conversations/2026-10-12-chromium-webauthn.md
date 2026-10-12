@@ -59,5 +59,15 @@ sudo -n apt-get install --yes --no-install-recommends xdotool
 - Added the Ubuntu 24.04 Playwright Chromium runtime libraries and fonts to `.devcontainer/Dockerfile`. Chromium itself remains installed by the consuming project's Playwright version, so the Docker image does not pin a browser release.
 - Added checks for those packages to `.devcontainer/test-image.sh` and recorded the X11/WebAuthn constraint in `prompts/LESSONS_LEARNED.md`.
 - X11 display forwarding can show a headed Chromium window, but it does not forward the Windows Hello platform authenticator. Use a Windows-host browser, or a Windows RDP session configured for WebAuthn redirection; an RDS-style Linux/Chromium window alone will not make Windows Hello available.
-- Validation: `bash -n .devcontainer/test-image.sh`, `git diff --check`, and editor error checks passed. An apt simulation against the agent's Ubuntu 26.04 package indexes accepted the names, but this is not the target Ubuntu 24.04 image. The Ubuntu 24.04 Docker build was stopped after roughly six minutes of package downloads because the network connection was slow; the image smoke test was therefore not run.
+- Initial validation: `bash -n .devcontainer/test-image.sh`, `git diff --check`, and editor error checks passed. An apt simulation against the agent's Ubuntu 26.04 package indexes accepted the names, but this is not the target Ubuntu 24.04 image. The agent's Ubuntu 24.04 Docker build was stopped after roughly six minutes of package downloads because the network connection was slow.
 - Preserved the existing untracked `.devcontainer/devcontainer-lock.json` without modifying it. No commit was created.
+
+## Follow-up user request (verbatim)
+
+ik heb de container gerebuild door open in container te kiezen. ka je de image testen?
+
+## Follow-up result
+
+- The agent's shell was the Ubuntu 26.04 host user `luc`, not the image's `vscode` user, so invoking the test script directly there stopped at its initial user assertion.
+- Located the user's rebuilt workspace image, then ran `.devcontainer/test-image.sh` from a temporary Docker container with the workspace mounted. The full image smoke test passed, including the Chromium package assertions, PowerShell modules and Functions HTTP checks; the worker returned PowerShell 7.6.5.
+- `git diff --check` passed after recording the result. The pre-existing untracked `.devcontainer/devcontainer-lock.json` remains untouched; no commit was created.
