@@ -11,6 +11,15 @@ test "$(id -u)" = 1000
 test "$HOME" = /home/vscode
 sudo -n true
 locale -a | grep -i '^en_US.utf8$'
+for browser_package in \
+    libasound2t64 libatk-bridge2.0-0t64 libatk1.0-0t64 libatspi2.0-0t64 libcairo2 \
+    libcups2t64 libdbus-1-3 libdrm2 libgbm1 libglib2.0-0t64 libnspr4 libnss3 \
+    libpango-1.0-0 libwayland-client0 libx11-6 libxcb1 libxcomposite1 libxdamage1 \
+    libxext6 libxfixes3 libxkbcommon0 libxrandr2 fonts-noto-color-emoji fonts-unifont \
+    libfontconfig1 libfreetype6 xfonts-cyrillic xfonts-scalable fonts-liberation \
+    fonts-ipafont-gothic fonts-wqy-zenhei fonts-tlwg-loma-otf fonts-freefont-ttf; do
+    test "$(dpkg-query --show --showformat='${db:Status-Status}' "$browser_package")" = installed
+done
 test "$(node --version)" = v22.22.2
 npm --version
 yarn --version

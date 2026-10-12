@@ -39,6 +39,13 @@ RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         bubblewrap ca-certificates curl dnsutils g++ git gnupg iproute2 iputils-ping \
         libicu74 libssl3t64 libunwind8 locales make mtr-tiny net-tools netcat-openbsd \
+        libasound2t64 libatk-bridge2.0-0t64 libatk1.0-0t64 libatspi2.0-0t64 libcairo2 \
+        libcups2t64 libdbus-1-3 libdrm2 libgbm1 libglib2.0-0t64 libnspr4 libnss3 \
+        libpango-1.0-0 libwayland-client0 libx11-6 libxcb1 libxcomposite1 libxdamage1 \
+        libxext6 libxfixes3 libxkbcommon0 libxrandr2 \
+        fonts-noto-color-emoji fonts-unifont libfontconfig1 libfreetype6 xfonts-cyrillic \
+        xfonts-scalable fonts-liberation fonts-ipafont-gothic fonts-wqy-zenhei \
+        fonts-tlwg-loma-otf fonts-freefont-ttf \
         nmap openssh-client procps python3-minimal python3-yaml python3-pip python3.12-venv ripgrep sudo tcpdump tmux traceroute unzip wget whois xz-utils zsh \
     && install -d -m 0755 /etc/apt/keyrings \
     && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
