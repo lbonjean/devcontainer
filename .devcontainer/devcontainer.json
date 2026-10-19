@@ -19,6 +19,8 @@
   "workspaceFolder": "/workspace",
   "mounts": [
     "source=${localWorkspaceFolderBasename}-history,target=/commandhistory,type=volume",
+    "source=${localWorkspaceFolderBasename}-copilot,target=/home/vscode/.copilot,type=volume",
+    "source=${localWorkspaceFolderBasename}-claude,target=/home/vscode/.claude,type=volume",
     "source=${localWorkspaceFolderBasename}-codex,target=/home/vscode/.codex,type=volume"
   ],
 
