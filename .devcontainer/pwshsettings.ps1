@@ -16,18 +16,18 @@ Register-ArgumentCompleter -Native -CommandName az -ScriptBlock {
   Remove-Item $completion_file, Env:\_ARGCOMPLETE_STDOUT_FILENAME, Env:\ARGCOMPLETE_USE_TEMPFILES, Env:\COMP_LINE, Env:\COMP_POINT, Env:\_ARGCOMPLETE, Env:\_ARGCOMPLETE_SUPPRESS_SPACE, Env:\_ARGCOMPLETE_IFS, Env:\_ARGCOMPLETE_SHELL
 }
 
-# Use VS Code's browser helper (if available) so az login can open auth URLs from the container.
-$vscodeServerRoot = "/vscode/vscode-server/bin/linux-x64"
-$browserHelper = Get-ChildItem -Path $vscodeServerRoot -Filter browser.sh -File -Recurse -ErrorAction SilentlyContinue |
-  Select-Object -First 1 -ExpandProperty FullName
+# # Use VS Code's browser helper (if available) so az login can open auth URLs from the container.
+# $vscodeServerRoot = "/vscode/vscode-server/bin/linux-x64"
+# $browserHelper = Get-ChildItem -Path $vscodeServerRoot -Filter browser.sh -File -Recurse -ErrorAction SilentlyContinue |
+#   Select-Object -First 1 -ExpandProperty FullName
 
-if ($browserHelper) {
-  $env:BROWSER = $browserHelper
-}
+# if ($browserHelper) {
+#   $env:BROWSER = $browserHelper
+# }
 
 # Optioneel: mooie menu-completion op Tab
 Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 Set-PSReadLineOption -HistorySavePath /commandhistory/ConsoleHost_history.txt -HistorySaveStyle SaveIncrementally
-if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
-  oh-my-posh init pwsh | Invoke-Expression
-}
+# if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
+#   oh-my-posh init pwsh | Invoke-Expression
+# }

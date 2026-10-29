@@ -1,35 +1,37 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/powershell
 {
-  "name": "LB PowerShell Dev Container",
+  "name": "${localWorkspaceFolderBasename}",
   "build": {
     "dockerfile": "Dockerfile",
     "context": ".."
   },
-  "features": {
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
-  },
+  // "features": {
+  //   "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  // },
   "runArgs": [
     // Allow all seccomp syscalls (unconfined), necessary for bubblewrap sandboxing.
         "--security-opt=seccomp=unconfined"
   ],
   "remoteUser": "vscode",
-
+  "containerEnv": {
+    "DEVCONTAINER": "true",
+    "SKIP_DOTFILES": "true", // Skip loading dotfiles, mount in ~/dotfiles will happen, but no install.sh
+    "MY_ENVIRONMENT": "development"
+  },
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   "workspaceFolder": "/workspace",
   "mounts": [
     "source=${localWorkspaceFolderBasename}-history,target=/commandhistory,type=volume",
-    "source=${localWorkspaceFolderBasename}-copilot,target=/home/vscode/.copilot,type=volume",
-    "source=${localWorkspaceFolderBasename}-claude,target=/home/vscode/.claude,type=volume",
-    "source=${localWorkspaceFolderBasename}-codex,target=/home/vscode/.codex,type=volume"
+    "source=${localWorkspaceFolderBasename}-home,target=/home/vscode,type=volume"
   ],
-
   "customizations": {
     // Configure properties specific to VS Code.
     "vscode": {
       // Set *default* container specific settings.json values on container create.
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "pwsh"
+        "terminal.integrated.defaultProfile.linux": "pwsh",
+        "remote.restoreForwardedPorts": false
       },
 
       // Add the IDs of extensions you want installed when the container is created.
