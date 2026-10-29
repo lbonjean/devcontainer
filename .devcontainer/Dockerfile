@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM ubuntu:24.04 AS tools
+FROM ubuntu:25.10 AS tools
 
 USER root
 
