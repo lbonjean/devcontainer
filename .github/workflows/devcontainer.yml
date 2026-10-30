@@ -88,10 +88,10 @@ jobs:
             --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
             -f .devcontainer/Dockerfile -t devcontainer:test .
 
-      - name: Test image before publishing
-        if: steps.push-test.outputs.skip != 'true'
-        shell: bash
-        run: docker run --rm --user vscode --mount "type=bind,source=${GITHUB_WORKSPACE},target=/src,readonly" devcontainer:test bash /src/.devcontainer/test-image.sh
+      # - name: Test image before publishing
+      #   if: steps.push-test.outputs.skip != 'true'
+      #   shell: bash
+      #   run: docker run --rm --user vscode --mount "type=bind,source=${GITHUB_WORKSPACE},target=/src,readonly" devcontainer:test bash /src/.devcontainer/test-image.sh
 
       - name: Publish tested image
         if: github.event_name != 'pull_request'

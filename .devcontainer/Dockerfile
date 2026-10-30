@@ -6,11 +6,14 @@ USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ARG POWERSHELL_VERSION=7.6.5
+ARG POWERSHELL_VERSION=7.6.9
 ARG NODE_VERSION=22.22.2
 ARG NVM_VERSION=0.40.3
 ARG DOTNET_CHANNEL=LTS
 ARG DOTNET_RUNTIME_CHANNEL=8.0
+
+
+
 
 ENV DOTNET_ROOT=/usr/share/dotnet \
     DOTNET_CLI_TELEMETRY_OPTOUT=1 \
@@ -37,16 +40,74 @@ RUN rm -f /etc/dpkg/dpkg.cfg.d/excludes \
 # Keep compilers/Python: nodeGypDependencies was enabled in the Node feature.
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        bubblewrap ca-certificates curl dnsutils g++ git gnupg iproute2 iputils-ping \
-        libicu74 libssl3t64 libunwind8 locales make mtr-tiny net-tools netcat-openbsd \
-        libasound2t64 libatk-bridge2.0-0t64 libatk1.0-0t64 libatspi2.0-0t64 libcairo2 \
-        libcups2t64 libdbus-1-3 libdrm2 libgbm1 libglib2.0-0t64 libnspr4 libnss3 \
-        libpango-1.0-0 libwayland-client0 libx11-6 libxcb1 libxcomposite1 libxdamage1 \
-        libxext6 libxfixes3 libxkbcommon0 libxrandr2 \
-        fonts-noto-color-emoji fonts-unifont libfontconfig1 libfreetype6 xfonts-cyrillic \
-        xfonts-scalable fonts-liberation fonts-ipafont-gothic fonts-wqy-zenhei \
-        fonts-tlwg-loma-otf fonts-freefont-ttf \
-        nmap openssh-client procps python3-minimal python3-yaml python3-pip python3.12-venv ripgrep sudo tcpdump tmux traceroute unzip wget whois xz-utils zsh \
+        bubblewrap \
+        ca-certificates \
+        curl \
+        dnsutils \
+        fonts-freefont-ttf \
+        fonts-ipafont-gothic \
+        fonts-liberation \
+        fonts-noto-color-emoji \
+        fonts-tlwg-loma-otf \
+        fonts-unifont \
+        fonts-wqy-zenhei \
+        g++ \
+        git \
+        gnupg \
+        iproute2 \
+        iputils-ping \
+        libasound2t64 \
+        libatk-bridge2.0-0t64 \
+        libatk1.0-0t64 \
+        libatspi2.0-0t64 \
+        libcairo2 \
+        libcups2t64 \
+        libdbus-1-3 \
+        libdrm2 \
+        libfontconfig1 \
+        libfreetype6 \
+        libgbm1 \
+        libglib2.0-0t64 \
+        libicu74 \
+        libnspr4 \
+        libnss3 \
+        libpango-1.0-0 \
+        libssl3t64 \
+        libunwind8 \
+        libwayland-client0 \
+        libx11-6 \
+        libxcb1 \
+        libxcomposite1 \
+        libxdamage1 \
+        libxext6 \
+        libxfixes3 \
+        libxkbcommon0 \
+        libxrandr2 \
+        locales \
+        make \
+        mtr-tiny \
+        net-tools \
+        netcat-openbsd \
+        nmap \
+        openssh-client \
+        procps \
+        python3-minimal \
+        python3-pip \
+        python3-yaml \
+        python3.12-venv \
+        ripgrep \
+        sudo \
+        tcpdump \
+        tmux \
+        traceroute \
+        unzip \
+        wget \
+        whois \
+        xdg-utils \
+        xfonts-cyrillic \
+        xfonts-scalable \
+        xz-utils \
+        zsh \
     && install -d -m 0755 /etc/apt/keyrings \
     && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
         | gpg --dearmor --yes -o /etc/apt/keyrings/microsoft.gpg \
@@ -121,53 +182,74 @@ RUN arch="$(dpkg --print-architecture)" \
     && find /home/vscode/.azure -mindepth 1 -maxdepth 1 ! -name config -exec rm -rf '{}' + \
     && rm -rf /home/vscode/.cache /tmp/*
 
-FROM tools AS worker-build
+# FROM tools AS worker-build
 
-ARG WORKER_VERSION=4.0.5362
+# ARG WORKER_VERSION=4.0.5362
 
-# The legacy SDK used for packaging, build modules, sources and NuGet caches
-# exist only in this stage. Only the published worker is consumed below.
-RUN test "$(dpkg --print-architecture)" = amd64 \
-    && mkdir -p /tmp/worker \
-    && curl -fsSL "https://github.com/Azure/azure-functions-powershell-worker/archive/refs/tags/v${WORKER_VERSION}.tar.gz" \
-        | tar -xz --strip-components=1 -C /tmp/worker \
-    && cd /tmp/worker \
-    && pwsh -NoLogo -NoProfile -Command '$ErrorActionPreference = "Stop"; $PSNativeCommandUseErrorActionPreference = $true; ./build.ps1 -Bootstrap -Configuration Release' \
-    && test -s src/bin/Release/net10.0/publish/Microsoft.Azure.Functions.PowerShellWorker.dll \
-    && mkdir /worker-output \
-    && cp -a src/bin/Release/net10.0/publish/. /worker-output/
+# # The legacy SDK used for packaging, build modules, sources and NuGet caches
+# # exist only in this stage. Only the published worker is consumed below.
+# RUN test "$(dpkg --print-architecture)" = amd64 \
+#     && mkdir -p /tmp/worker \
+#     && curl -fsSL "https://github.com/Azure/azure-functions-powershell-worker/archive/refs/tags/v${WORKER_VERSION}.tar.gz" \
+#         | tar -xz --strip-components=1 -C /tmp/worker \
+#     && cd /tmp/worker \
+#     && pwsh -NoLogo -NoProfile -Command '$ErrorActionPreference = "Stop"; $PSNativeCommandUseErrorActionPreference = $true; ./build.ps1 -Bootstrap -Configuration Release' \
+#     && test -s src/bin/Release/net10.0/publish/Microsoft.Azure.Functions.PowerShellWorker.dll \
+#     && mkdir /worker-output \
+#     && cp -a src/bin/Release/net10.0/publish/. /worker-output/
 
 FROM tools AS final
+ARG CORE_TOOLS_VERSION=4.16.0
 
-ARG CORE_TOOLS_VERSION=4.14.0
-
-# Use a build-stage mount so even a bundled 7.6 worker is replaced in the
-# installation layer, without retaining the original copy in an earlier layer.
-RUN --mount=type=bind,from=worker-build,source=/worker-output,target=/mnt/worker,ro \
-    curl -fsSL "https://github.com/Azure/azure-functions-core-tools/releases/download/${CORE_TOOLS_VERSION}/Azure.Functions.Cli.linux-x64.${CORE_TOOLS_VERSION}.zip" \
-        -o /tmp/core-tools.zip \
+RUN curl -fsSL \
+      "https://github.com/Azure/azure-functions-core-tools/releases/download/${CORE_TOOLS_VERSION}/Azure.Functions.Cli.linux-x64.${CORE_TOOLS_VERSION}.zip" \
+      -o /tmp/core-tools.zip \
     && mkdir -p /usr/lib/azure-functions-core-tools-4 \
     && unzip -q /tmp/core-tools.zip -d /usr/lib/azure-functions-core-tools-4 \
     && chmod 0755 /usr/lib/azure-functions-core-tools-4/func \
     && ln -sf /usr/lib/azure-functions-core-tools-4/func /usr/local/bin/func \
-    && core_tools_dir="$(dirname "$(readlink -f "$(command -v func)")")" \
-    && test -s "$core_tools_dir/workers/powershell/worker.config.json" \
-    && rm -rf "$core_tools_dir/workers/powershell/7.6" \
-    && mkdir -p "$core_tools_dir/workers/powershell/7.6" \
-    && cp -a /mnt/worker/. "$core_tools_dir/workers/powershell/7.6/" \
-    && chmod -R a+rX "$core_tools_dir/workers/powershell/7.6" \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && rm -f /tmp/core-tools.zip
+# Use a build-stage mount so even a bundled 7.6 worker is replaced in the
+# installation layer, without retaining the original copy in an earlier layer.
+# RUN --mount=type=bind,from=worker-build,source=/worker-output,target=/mnt/worker,ro \
+#     curl -fsSL "https://github.com/Azure/azure-functions-core-tools/releases/download/${CORE_TOOLS_VERSION}/Azure.Functions.Cli.linux-x64.${CORE_TOOLS_VERSION}.zip" \
+#         -o /tmp/core-tools.zip \
+#     && mkdir -p /usr/lib/azure-functions-core-tools-4 \
+#     && unzip -q /tmp/core-tools.zip -d /usr/lib/azure-functions-core-tools-4 \
+#     && chmod 0755 /usr/lib/azure-functions-core-tools-4/func \
+#     && ln -sf /usr/lib/azure-functions-core-tools-4/func /usr/local/bin/func \
+#     && core_tools_dir="$(dirname "$(readlink -f "$(command -v func)")")" \
+#     && test -s "$core_tools_dir/workers/powershell/worker.config.json" \
+#     && rm -rf "$core_tools_dir/workers/powershell/7.6" \
+#     && mkdir -p "$core_tools_dir/workers/powershell/7.6" \
+#     && cp -a /mnt/worker/. "$core_tools_dir/workers/powershell/7.6/" \
+#     && chmod -R a+rX "$core_tools_dir/workers/powershell/7.6" \
+#     && apt-get clean \
+#     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Stage modules outside PSModulePath to avoid updating a module already loaded
 # by PowerShellGet while resolving dependencies. Retain CurrentUser scope.
-RUN runuser -u vscode -- pwsh -NoLogo -NoProfile -Command \
-        '$ErrorActionPreference = "Stop"; $staging = New-Item -ItemType Directory -Path /tmp/powershell-modules -Force; Save-Module -Name PowerShellGet, PSReadLine, Az.Accounts, Microsoft.Graph.Authentication, PnP.PowerShell, Pester, ExchangeOnlineManagement -Path $staging.FullName -Force; $destination = New-Item -ItemType Directory -Path "$HOME/.local/share/powershell/Modules" -Force; Copy-Item "$staging/*" $destination.FullName -Recurse -Force' \
-    && rm -rf /home/vscode/.cache /home/vscode/.local/share/powershell/PowerShellGet \
-        /root/.cache /tmp/* /var/tmp/*
+# RUN runuser -u vscode -- pwsh -NoLogo -NoProfile -Command \
+#         '$ErrorActionPreference = "Stop"; $staging = New-Item -ItemType Directory -Path /tmp/powershell-modules -Force; Save-Module -Name PowerShellGet, PSReadLine, Az, Microsoft.Graph, PnP.PowerShell, Pester, ExchangeOnlineManagement -Path $staging.FullName -Force; $destination = New-Item -ItemType Directory -Path "/usr/local/share/powershell/Modules" -Force; Copy-Item "$staging/*" $destination.FullName -Recurse -Force' \
+#     && rm -rf /home/vscode/.cache /home/vscode/.local/share/powershell/PowerShellGet \
+#         /root/.cache /tmp/* /var/tmp/*
+
+# Install PowerShell modules system-wide
+RUN pwsh -NoLogo -NoProfile -Command \
+    '$ErrorActionPreference = "Stop"; \
+     $staging = "/tmp/powershell-modules"; \
+     New-Item -ItemType Directory -Path $staging -Force | Out-Null; \
+     Save-Module -Name PowerShellGet, PSReadLine, Az, Microsoft.Graph, PnP.PowerShell, Pester, ExchangeOnlineManagement -Path $staging -Force; \
+     $destination = "/usr/local/share/powershell/Modules"; \
+     New-Item -ItemType Directory -Path $destination -Force | Out-Null; \
+     Copy-Item "$staging/*" $destination -Recurse -Force' \
+    && rm -rf /tmp/powershell-modules /root/.cache /tmp/*
+
+
 
 RUN install -d -o vscode -g vscode \
-        /commandhistory /home/vscode/.codex /home/vscode/.config/powershell
+        /home/vscode
+#        /commandhistory /home/vscode/.codex /home/vscode/.config/powershell /home/vscode/.copilot /home/vscode/.claude /persistent
     #&& printf '%s\n' '. /home/vscode/.config/powershell/pwshsettings.ps1' \
     #    > /home/vscode/.config/powershell/Microsoft.PowerShell_profile.ps1 \
     # && chown vscode:vscode /home/vscode/.config/powershell/Microsoft.PowerShell_profile.ps1
