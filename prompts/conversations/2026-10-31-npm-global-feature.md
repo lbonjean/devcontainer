@@ -97,3 +97,15 @@ kan dat ook als een list tussen []?
 - Officiële `npx @devcontainers/cli features package` geprobeerd, maar npm leverde geen uitvoer en de poging is afgebroken. CLI-packaging en Docker-integratie zijn lokaal niet geverifieerd; Docker en de CLI ontbreken in de devcontainer. De nieuwe workflow voert de packagingcontrole op GitHub uit.
 - Officiële CLI-publishbron en Microsoft Save-Module-documentatie geraadpleegd. Een aanvankelijk geraadpleegde CLI-documentatie-URL gaf 404; gecorrigeerd naar de broncode.
 - Geen push of daadwerkelijke registrypublicatie uitgevoerd; die volgt na het beschikbaar maken van de workflow op main.
+
+## Installatie ImportExcel controleren — gebruikersverzoek (verbatim)
+
+```text
+hoe weet ik of import-excel ginstalleerd is?
+```
+
+## Antwoord en validatie
+
+- Controle uitgevoerd met `Get-Module -ListAvailable -Name ImportExcel | Select-Object Name, Version, ModuleBase` in een verse PowerShell-sessie. Geen resultaten: ImportExcel is niet beschikbaar via PSModulePath in deze container.
+- Gebruiker krijgt het controlecommando, uitleg dat geen uitvoer betekent dat PowerShell de module niet vindt en `Import-Module ImportExcel -ErrorAction Stop` als laadcontrole.
+- Alleen gesprekslog gewijzigd; `git diff --check` geslaagd. Eerste commitpoging van het vorige verzoek werd door de alleen-lezen .git-sandbox geblokkeerd; daarna met toegestane escalatie succesvol gecommit.
