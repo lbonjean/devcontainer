@@ -6,14 +6,23 @@ if ! command -v npm >/dev/null 2>&1; then
     exit 1
 fi
 
-packages="${PACKAGES:-@openai/codex @fission-ai/openspec@latest}"
-packages="${packages//$'\n'/ }"
-read -r -a package_list <<< "$packages" || true
+feature_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+package_lines="$(node -e '
+const fs = require("node:fs");
+const packages = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+if (!Array.isArray(packages) || packages.some(pkg =>
+    typeof pkg !== "string" || !pkg.trim() || pkg !== pkg.trim() || /[\r\n]/.test(pkg))) {
+    console.error("npm-global-packages: packages.json must contain an array of non-empty package specs.");
+    process.exit(1);
+}
+for (const pkg of packages) console.log(pkg);
+' "$feature_dir/packages.json")"
 
-if [ "${#package_list[@]}" -eq 0 ]; then
+if [ -z "$package_lines" ]; then
     echo 'npm-global-packages: no packages requested.'
     exit 0
 fi
+mapfile -t package_list <<< "$package_lines"
 
 npm_command="$(command -v npm)"
 npm_prefix="$(npm prefix -g)"

@@ -1,6 +1,7 @@
 # Lessons Learned
 
 - 2026-10-31: Dev Container Features run their install script as root. In this image, nvm's global npm prefix belongs to `vscode`; use the prefix owner for global package installation so later npm updates remain writable. Local Feature references in `devcontainer.json` resolve relative to that file's directory.
+- 2026-10-31: Dev Container Feature option values support only strings and booleans. For a true editable package array in a local Feature, keep a JSON file inside the Feature directory and have `install.sh` parse it; local Feature files are packaged together for the build.
 
 - 2026-10-12: For headed Playwright Chromium on Ubuntu 24.04, bake the official Playwright Noble browser-library and font packages into the devcontainer, but leave the Chromium download pinned to the consuming project's Playwright version. X11 forwards display/input, not the Windows Hello platform authenticator; use a browser on Windows or an RDP Windows session with WebAuthn redirection configured.
 - 2026-10-05: The installed VS Code devcontainer Git credential helper uses process.env.REMOTE_CONTAINERS_IPC to reach host credentials. Agent shell processes may lack this variable even when authentication works in the user's PowerShell terminal in the same container. Both set-gh-token helpers then fail because Git returns no password. Restore the known terminal IPC environment or let the user run authenticated commands in that terminal; do not copy, print or persist the token.

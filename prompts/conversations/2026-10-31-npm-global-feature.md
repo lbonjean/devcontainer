@@ -33,3 +33,17 @@ zet dit pakket mee in de packages  @fission-ai/openspec@latest
 - Eerste poging om alleen de eigen `devcontainer.json`-hunk te stagen faalde door een foutieve patchlengte; gecorrigeerde indexpatch is toegepast en de `uv`-wijziging blijft unstaged.
 - Eerste ad-hoc JSON-controle faalde doordat inline `//`-commentaar niet was verwijderd; de gecorrigeerde controle slaagde voor beide features.
 - `git diff --check` uitgevoerd voor de commit.
+
+## Vervolgverzoek (verbatim)
+
+```text
+graag de packages als een array opbouwen.
+["pakket1","pakket2"]
+```
+
+## Aanpassing en validatie
+
+- De Dev Container Feature-specificatie accepteert alleen string- en boolean-opties. De pakketlijst is daarom verplaatst naar een echte JSON-array in `.devcontainer/features/npm-global-packages/packages.json`; de Feature-verwijzing in `devcontainer.json` gebruikt nu `{}`.
+- `install.sh` leest en valideert de array met Node, dat met npm al in de image aanwezig is. De Feature-versie is verhoogd naar 2.0.0 vanwege de gewijzigde configuratievorm. README en duurzame les bijgewerkt.
+- Twee lokale npm-testpakketten via de JSON-array tweemaal met succes geïnstalleerd; een array met ongeldig element gaf een fout en een lege array sloeg de installatie over.
+- De bestaande, niet-gecommitte `uv`-regel blijft buiten de commit.
