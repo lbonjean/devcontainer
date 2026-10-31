@@ -10,6 +10,7 @@
   //   "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   // },
   "features": {
+    "ghcr.io/va-h/devcontainers-features/uv:1": {},
     "./features/npm-global-packages": {
       "packages": "@openai/codex,@fission-ai/openspec@latest"
     },
@@ -19,7 +20,7 @@
   },
   "runArgs": [
     // Allow all seccomp syscalls (unconfined), necessary for bubblewrap sandboxing.
-        "--security-opt=seccomp=unconfined"
+    "--security-opt=seccomp=unconfined"
   ],
   "remoteUser": "vscode",
   "containerEnv": {
