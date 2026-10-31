@@ -61,3 +61,15 @@ ik wil het opgeven zoals hier de modules
 - `packages` is nu dezelfde soort stringoptie, met standaardwaarde leeg. Deze devcontainer stelt `@openai/codex,@fission-ai/openspec@latest` in. Het aparte `packages.json` is verwijderd en de README is aangepast. Feature-versie verhoogd naar 3.0.0 wegens gewijzigde configuratievorm.
 - Twee lokale npm-testpakketten via de komma-gescheiden optie tweemaal succesvol geïnstalleerd. Lege lijst wordt overgeslagen; lege entries en een afsluitende komma leveren een fout op. Bash-syntax en Feature JSON gecontroleerd.
 - De bestaande niet-gecommitte `uv`-regel blijft buiten de commit. Er is geen volledige devcontainerbuild uitgevoerd omdat Docker en de Dev Container CLI ontbreken.
+
+## Vraag over arrayoptie (verbatim)
+
+```text
+kan dat ook als een list tussen []?
+```
+
+## Antwoord en controle
+
+- Nee: de Dev Container Feature-specificatie laat voor een optie alleen `string` of `boolean` toe. Een directe configuratie zoals `"packages": ["pakket1", "pakket2"]` is daarom geen geldige Feature-optie.
+- De huidige komma-gescheiden string is de vorm die de PowerShell Feature voor `modules` gebruikt. Een echte JSON-array kan wel in een apart bestand staan, maar dan wordt de lijst niet als Feature-optie in `devcontainer.json` opgegeven.
+- Geen codebestanden gewijzigd. Specificatie opnieuw gecontroleerd; `git diff --check` uitgevoerd. De bestaande `uv`-wijziging blijft buiten de commit.
