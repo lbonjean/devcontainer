@@ -1,0 +1,13 @@
+{
+  "id": "npm-global-packages",
+  "version": "1.0.0",
+  "name": "Global npm packages",
+  "description": "Install a configurable list of global npm packages using an existing npm installation.",
+  "options": {
+    "packages": {
+      "type": "string",
+      "default": "@openai/codex @fission-ai/openspec@latest",
+      "description": "Whitespace-separated npm package specs to install globally, for example @openai/codex typescript@5."
+    }
+  }
+}

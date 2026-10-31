@@ -7,6 +7,26 @@ the host Docker daemon; this requires Docker on the host and a container rebuild
 The published image does not include that Feature. The image is published to
 GitHub Container Registry. Consumers can add their own `features` alongside `image`.
 
+## Global npm packages Feature
+
+The local `.devcontainer/features/npm-global-packages` Feature installs npm
+packages globally during a devcontainer rebuild. npm must already be available
+in the image. This repository's devcontainer uses it to install `@openai/codex`
+and `@fission-ai/openspec@latest`.
+To install several packages, use a whitespace-separated `packages` value:
+
+```json
+"features": {
+  "./features/npm-global-packages": {
+    "packages": "@openai/codex @fission-ai/openspec@latest typescript@5"
+  }
+}
+```
+
+The path is relative to the directory containing `devcontainer.json`. Package
+specs may include versions; without a version, npm resolves the current release
+when the devcontainer is rebuilt. This local Feature is not published to GHCR.
+
 ## Published image
 
 ```text
