@@ -1,0 +1,45 @@
+name: Publish dev container features
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .devcontainer/features/**
+      - .github/workflows/features.yml
+  pull_request:
+    paths:
+      - .devcontainer/features/**
+      - .github/workflows/features.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-features
+  cancel-in-progress: false
+
+jobs:
+  package-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Install Dev Container CLI
+        run: npm install -g @devcontainers/cli
+      - name: Validate and package features
+        run: |
+          for script in .devcontainer/features/*/install.sh; do bash -n "$script"; done
+          devcontainer features package .devcontainer/features --output-folder /tmp/features
+      - name: Publish features to GHCR
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: devcontainer features publish .devcontainer/features --registry ghcr.io --namespace "${GITHUB_REPOSITORY,,}"

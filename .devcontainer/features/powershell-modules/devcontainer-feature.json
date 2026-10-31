@@ -1,0 +1,13 @@
+{
+  "id": "powershell-modules",
+  "version": "1.0.0",
+  "name": "PowerShell modules",
+  "description": "Install PowerShell Gallery modules for all users using an existing PowerShell installation.",
+  "options": {
+    "modules": {
+      "type": "string",
+      "default": "",
+      "description": "Optional comma-separated module names from PSGallery (for example Pester,ImportExcel)."
+    }
+  }
+}

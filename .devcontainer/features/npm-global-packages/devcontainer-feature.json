@@ -1,0 +1,13 @@
+{
+  "id": "npm-global-packages",
+  "version": "3.0.0",
+  "name": "Global npm packages",
+  "description": "Install global npm packages using an existing npm installation.",
+  "options": {
+    "packages": {
+      "type": "string",
+      "default": "",
+      "description": "Optional comma-separated list of npm package specs to install globally (for example @openai/codex,@fission-ai/openspec@latest)."
+    }
+  }
+}
