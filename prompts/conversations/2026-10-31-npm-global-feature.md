@@ -109,3 +109,17 @@ hoe weet ik of import-excel ginstalleerd is?
 - Controle uitgevoerd met `Get-Module -ListAvailable -Name ImportExcel | Select-Object Name, Version, ModuleBase` in een verse PowerShell-sessie. Geen resultaten: ImportExcel is niet beschikbaar via PSModulePath in deze container.
 - Gebruiker krijgt het controlecommando, uitleg dat geen uitvoer betekent dat PowerShell de module niet vindt en `Import-Module ImportExcel -ErrorAction Stop` als laadcontrole.
 - Alleen gesprekslog gewijzigd; `git diff --check` geslaagd. Eerste commitpoging van het vorige verzoek werd door de alleen-lezen .git-sandbox geblokkeerd; daarna met toegestane escalatie succesvol gecommit.
+
+## Rebuild zonder ImportExcel — gebruikersverzoek (verbatim)
+
+```text
+in de devcontainer is powershell al geinstalleerd.  ik heb die lijn van install after uit de feature gehaald. ik heb de container gerebuild en volgens mij staan ze er niet in. check je eens?
+```
+
+## Diagnose, correctie en validatie
+
+- De draaiende container heeft PowerShell 7.6.9 en de bestaande systeemmodules, maar `Get-Module -ListAvailable -Name ImportExcel` geeft nul resultaten.
+- De nieuwe lokale PowerShell Feature-verwijzing gebruikte `packages: ImportExcel`. De gedeclareerde optie heet `modules`; de installer leest MODULES en slaat bij een lege waarde installatie over. Optienaam in `.devcontainer/devcontainer.json` gecorrigeerd naar `modules`.
+- JSON-configuratie gelezen en geverifieerd dat de ingestelde Feature-optie overeenkomt met de metadata. `git diff --check` geslaagd.
+- Geen nieuwe rebuild of handmatige installatie uitgevoerd. Gebruiker moet opnieuw rebuilden om de gecorrigeerde configuratie toe te passen; installatie na rebuild is nog niet geverifieerd.
+- Verwijderde `installsAfter` behouden: PowerShell zit al in de Dockerfile-image. Die bestaande gebruikerswijziging, uv, formattering en de lockfile blijven buiten deze commit. Alleen de gecorrigeerde PowerShell Feature-configuratie en dit log worden gecommit.

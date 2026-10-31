@@ -12,6 +12,9 @@
   "features": {
     "./features/npm-global-packages": {
       "packages": "@openai/codex,@fission-ai/openspec@latest"
+    },
+    "./features/powershell-modules": {
+      "modules": "ImportExcel"
     }
   },
   "runArgs": [
