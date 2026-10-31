@@ -47,3 +47,17 @@ graag de packages als een array opbouwen.
 - `install.sh` leest en valideert de array met Node, dat met npm al in de image aanwezig is. De Feature-versie is verhoogd naar 2.0.0 vanwege de gewijzigde configuratievorm. README en duurzame les bijgewerkt.
 - Twee lokale npm-testpakketten via de JSON-array tweemaal met succes geïnstalleerd; een array met ongeldig element gaf een fout en een lege array sloeg de installatie over.
 - De bestaande, niet-gecommitte `uv`-regel blijft buiten de commit.
+
+## Tweede vervolgverzoek (verbatim)
+
+```text
+ik wil het opgeven zoals hier de modules
+[https://github.com/devcontainers/features/tree/main/src/powershell](https://github.com/devcontainers/features/tree/main/src/powershell)
+```
+
+## Correctie en validatie
+
+- De officiële PowerShell Feature gebruikt voor `modules` een komma-gescheiden stringoptie in `devcontainer.json`. De eerdere interpretatie als aparte JSON-array was onjuist voor de bedoelde interface.
+- `packages` is nu dezelfde soort stringoptie, met standaardwaarde leeg. Deze devcontainer stelt `@openai/codex,@fission-ai/openspec@latest` in. Het aparte `packages.json` is verwijderd en de README is aangepast. Feature-versie verhoogd naar 3.0.0 wegens gewijzigde configuratievorm.
+- Twee lokale npm-testpakketten via de komma-gescheiden optie tweemaal succesvol geïnstalleerd. Lege lijst wordt overgeslagen; lege entries en een afsluitende komma leveren een fout op. Bash-syntax en Feature JSON gecontroleerd.
+- De bestaande niet-gecommitte `uv`-regel blijft buiten de commit. Er is geen volledige devcontainerbuild uitgevoerd omdat Docker en de Dev Container CLI ontbreken.

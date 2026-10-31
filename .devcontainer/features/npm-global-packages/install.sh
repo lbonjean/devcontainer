@@ -6,23 +6,28 @@ if ! command -v npm >/dev/null 2>&1; then
     exit 1
 fi
 
-feature_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-package_lines="$(node -e '
-const fs = require("node:fs");
-const packages = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
-if (!Array.isArray(packages) || packages.some(pkg =>
-    typeof pkg !== "string" || !pkg.trim() || pkg !== pkg.trim() || /[\r\n]/.test(pkg))) {
-    console.error("npm-global-packages: packages.json must contain an array of non-empty package specs.");
-    process.exit(1);
-}
-for (const pkg of packages) console.log(pkg);
-' "$feature_dir/packages.json")"
-
-if [ -z "$package_lines" ]; then
+packages="${PACKAGES:-}"
+if [ -z "${packages//[[:space:]]/}" ]; then
     echo 'npm-global-packages: no packages requested.'
     exit 0
 fi
-mapfile -t package_list <<< "$package_lines"
+
+if [[ "$packages" =~ ,[[:space:]]*$ ]]; then
+    echo 'npm-global-packages: packages must not end with a comma.' >&2
+    exit 1
+fi
+
+IFS=',' read -r -a package_list <<< "$packages"
+for i in "${!package_list[@]}"; do
+    package="${package_list[$i]}"
+    package="${package#"${package%%[![:space:]]*}"}"
+    package="${package%"${package##*[![:space:]]}"}"
+    if [ -z "$package" ]; then
+        echo 'npm-global-packages: packages must not contain empty entries.' >&2
+        exit 1
+    fi
+    package_list[$i]="$package"
+done
 
 npm_command="$(command -v npm)"
 npm_prefix="$(npm prefix -g)"

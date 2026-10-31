@@ -11,21 +11,20 @@ GitHub Container Registry. Consumers can add their own `features` alongside `ima
 
 The local `.devcontainer/features/npm-global-packages` Feature installs npm
 packages globally during a devcontainer rebuild. npm must already be available
-in the image. Edit `.devcontainer/features/npm-global-packages/packages.json`
-to choose packages; it is a JSON array:
+in the image. Set its comma-separated `packages` option in `devcontainer.json`,
+as with the `modules` option of the PowerShell Feature:
 
 ```json
-[
-  "@openai/codex",
-  "@fission-ai/openspec@latest"
-]
+"features": {
+  "./features/npm-global-packages": {
+    "packages": "@openai/codex,@fission-ai/openspec@latest"
+  }
+}
 ```
 
-The devcontainer references the Feature as
-`"./features/npm-global-packages": {}`; the path is relative to the directory
-containing `devcontainer.json`. Package specs may include versions; without a
-version, npm resolves the current release when the devcontainer is rebuilt.
-This local Feature is not published to GHCR.
+The path is relative to the directory containing `devcontainer.json`. Package
+specs may include versions; without a version, npm resolves the current release
+when the devcontainer is rebuilt. This local Feature is not published to GHCR.
 
 ## Published image
 

@@ -10,7 +10,9 @@
   //   "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   // },
   "features": {
-    "./features/npm-global-packages": {}
+    "./features/npm-global-packages": {
+      "packages": "@openai/codex,@fission-ai/openspec@latest"
+    }
   },
   "runArgs": [
     // Allow all seccomp syscalls (unconfined), necessary for bubblewrap sandboxing.
