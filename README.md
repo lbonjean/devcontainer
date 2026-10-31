@@ -24,7 +24,56 @@ as with the `modules` option of the PowerShell Feature:
 
 The path is relative to the directory containing `devcontainer.json`. Package
 specs may include versions; without a version, npm resolves the current release
-when the devcontainer is rebuilt. This local Feature is not published to GHCR.
+when the devcontainer is rebuilt. The Feature is also published to GHCR as described below.
+
+## PowerShell modules Feature
+
+The `.devcontainer/features/powershell-modules` Feature installs modules and their
+dependencies from PSGallery for all users. PowerShell and PowerShellGet must
+already be installed. Configure comma-separated module names:
+
+```json
+"features": {
+  "./features/powershell-modules": {
+    "modules": "Pester,ImportExcel"
+  }
+}
+```
+
+An empty list skips installation. Repeated installation is supported. Modules
+resolve to the latest stable Gallery version at build time; required module
+licenses are accepted during installation. Existing module versions are retained.
+
+## Published features
+
+After merging to `main`, the **Publish dev container features** workflow packages
+and publishes both Features to GHCR. Pull requests validate packaging without
+publishing. You can also run the workflow manually on `main`.
+Use these references from another repository:
+
+```json
+"features": {
+  "ghcr.io/lbonjean/devcontainer/npm-global-packages:latest": {
+    "packages": "@openai/codex,@fission-ai/openspec@latest"
+  },
+  "ghcr.io/lbonjean/devcontainer/powershell-modules:latest": {
+    "modules": "Pester,ImportExcel"
+  }
+}
+```
+
+No Git tags, GitHub Releases or separate release workflow are needed. When
+changing a Feature, increment its `version` in `devcontainer-feature.json`
+(for example `1.0.0` → `1.0.1`). The official CLI publishes the version aliases
+and `latest` automatically; an already published version is skipped.
+Consumers keep using `:latest`; rebuild the devcontainer to apply changes.
+If a consumer has a `devcontainer-lock.json`, update its locked Feature digest
+with `devcontainer features upgrade` before rebuilding to get a newer publication.
+
+GHCR packages can initially be private. After the first publication, set each
+package's visibility to **Public** in GitHub package settings for use without
+registry authentication, or authenticate to GHCR for private use.
+See the [official Feature publishing tools](https://github.com/devcontainers/action).
 
 ## Published image
 
