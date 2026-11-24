@@ -47,3 +47,15 @@ powershell geralteerd:
 - Remaining upstream warnings: SWA transitive dependencies include deprecated prebuild-install, inflight, glob, rimraf and sudo-prompt; Azure CLI emits its existing experimental config and Python SyntaxWarnings. Interactive Bash smoke check emits expected no-TTY job-control warnings. Corepack downloaded its Yarn/pnpm distributions during first execution.
 - PowerShell syntax validation and final `git diff --check` passed. Temporary build/smoke output files removed after summarizing. Durable bootstrap/script-policy findings added to LESSONS_LEARNED.md.
 - Delivered: updated packages and prompt setup are committed locally; rebuild/recreate the devcontainer to consume changes. No push or publication performed.
+
+## Node version update — user request (verbatim)
+
+```text
+ik zou graag de laatste versie van node in deze Docker file zetten
+```
+
+## Delivered
+
+- Updated `.devcontainer/Dockerfile`'s pinned `NODE_VERSION` from 22.22.2 to 26.13.1, the current stable release listed on the official Node.js download page.
+- `git diff --check` passed. A Docker build was not run because permission was denied.
+- Commit results are recorded after completion.
