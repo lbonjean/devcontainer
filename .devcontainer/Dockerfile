@@ -1,26 +1,20 @@
 # syntax=docker/dockerfile:1
 
-FROM ubuntu:24.04 AS tools
+FROM ubuntu:26.04 AS tools
 
 USER root
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG POWERSHELL_VERSION=7.6.10
-ARG NODE_VERSION=26.13.1
-ARG NVM_VERSION=0.40.3
-ARG DOTNET_CHANNEL=LTS
-ARG DOTNET_RUNTIME_CHANNEL=8.0
 
 
 
 
-ENV DOTNET_ROOT=/usr/share/dotnet \
-    DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1 \
     DOTNET_NOLOGO=1 \
-    NVM_DIR=/usr/local/share/nvm \
-    NVM_SYMLINK_CURRENT=true \
-    PATH=/usr/local/share/nvm/current/bin:/usr/share/dotnet:/home/vscode/.dotnet/tools:${PATH}
+    NPM_CONFIG_PREFIX=/usr/local/share/npm-global \
+    PATH=/usr/local/share/npm-global/bin:/home/vscode/.dotnet/tools:${PATH}
 
 # Retain documentation for existing and future packages, and restore the content
 # stripped from the Ubuntu base. man-db replaces Ubuntu's placeholder man script.
@@ -68,7 +62,7 @@ RUN apt-get update \
         libfreetype6 \
         libgbm1 \
         libglib2.0-0t64 \
-        libicu74 \
+        libicu78 \
         libnspr4 \
         libnss3 \
         libpango-1.0-0 \
@@ -89,12 +83,15 @@ RUN apt-get update \
         net-tools \
         netcat-openbsd \
         nmap \
+        nodejs \
+        npm \
+        software-properties-common \
         openssh-client \
         procps \
         python3-minimal \
         python3-pip \
         python3-yaml \
-        python3.12-venv \
+        python3-venv \
         ripgrep \
         sudo \
         tcpdump \
@@ -114,7 +111,7 @@ RUN apt-get update \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
         -o /etc/apt/keyrings/githubcli.gpg \
     && chmod 0644 /etc/apt/keyrings/*.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ noble main" \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ resolute main" \
         > /etc/apt/sources.list.d/azure-cli.list \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli.gpg] https://cli.github.com/packages stable main" \
         > /etc/apt/sources.list.d/github-cli.list \
@@ -143,35 +140,17 @@ RUN if id ubuntu >/dev/null 2>&1; then \
 
 ENV LANG=en_US.UTF-8
 
-# Install into the same location used by the .NET feature and worker bootstrap.
-# Archives and installer scripts are deleted before this layer is committed.
-RUN curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh \
-    && bash /tmp/dotnet-install.sh --channel "$DOTNET_CHANNEL" --install-dir "$DOTNET_ROOT" --no-path \
-    && bash /tmp/dotnet-install.sh --channel "$DOTNET_RUNTIME_CHANNEL" --runtime dotnet --install-dir "$DOTNET_ROOT" --no-path \
-    && ln -sf "$DOTNET_ROOT/dotnet" /usr/local/bin/dotnet \
-    && rm -rf /tmp/* /root/.dotnet /root/.nuget /root/.cache
+# Ubuntu supplies the SDK; its .NET backports feed supplies the retained runtime.
+RUN add-apt-repository --yes ppa:dotnet/backports \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        dotnet-sdk-10.0 dotnet-runtime-8.0 libsecret-1-dev pkg-config \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Retain nvm, npm, Yarn and pnpm from the Node feature, including user writes.
-# Bootstrap npm outside its global prefix: replacing the running npm 10 can
-# remove modules it still needs during installation cleanup.
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libsecret-1-dev pkg-config \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && install -d -o vscode -g vscode "$NVM_DIR" \
-    && curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh" -o /tmp/install-nvm.sh \
-    && runuser -u vscode -- env PROFILE=/dev/null METHOD=script bash /tmp/install-nvm.sh \
-    && runuser -u vscode -- bash -c 'set -e; source "$NVM_DIR/nvm.sh"; nvm install "$1" && nvm alias default "$1" && npm install --prefix /tmp/npm-bootstrap npm@latest && node /tmp/npm-bootstrap/node_modules/npm/bin/npm-cli.js install -g npm@latest && npm install -g --allow-scripts=yarn,keytar yarn@latest pnpm@latest @azure/static-web-apps-cli@latest && npm update -g --allow-scripts=yarn,keytar' -- "$NODE_VERSION" \
-    && printf '%s\n' 'export NVM_DIR=/usr/local/share/nvm' \
-        '[ ! -s "$NVM_DIR/nvm.sh" ] || . "$NVM_DIR/nvm.sh"' > /etc/profile.d/nvm.sh \
-    && printf '\n%s\n' '. /etc/profile.d/nvm.sh' >> /etc/bash.bashrc \
-    && printf '\n%s\n' '. /etc/profile.d/nvm.sh' >> /etc/zsh/zshrc \
-    && rm -rf "$NVM_DIR/.cache" /home/vscode/.npm /home/vscode/.cache /tmp/*
-
-# Install the standalone prompt engine for all users (not the retired PS module).
-RUN curl -fsSL https://ohmyposh.dev/install.sh -o /tmp/install-oh-my-posh.sh \
-    && bash /tmp/install-oh-my-posh.sh -d /usr/local/bin \
-    && oh-my-posh version \
-    && rm -rf /tmp/* /root/.cache
+# Keep Ubuntu's Node.js and npm. Global developer tools remain writable by vscode.
+RUN install -d -o vscode -g vscode "$NPM_CONFIG_PREFIX" \
+    && runuser -u vscode -- npm install -g --engine-strict yarn pnpm @azure/static-web-apps-cli \
+    && rm -rf /home/vscode/.npm /home/vscode/.cache /tmp/*
 
 # A global Bicep binary avoids a second user-specific download via az bicep.
 RUN arch="$(dpkg --print-architecture)" \
@@ -248,7 +227,7 @@ RUN pwsh -NoLogo -NoProfile -Command \
 
 
 RUN install -d -o vscode -g vscode \
-        /home/vscode
+        /home/vscode /home/vscode/.codex /commandhistory
 #        /commandhistory /home/vscode/.codex /home/vscode/.config/powershell /home/vscode/.copilot /home/vscode/.claude /persistent
     #&& printf '%s\n' '. /home/vscode/.config/powershell/pwshsettings.ps1' \
     #    > /home/vscode/.config/powershell/Microsoft.PowerShell_profile.ps1 \

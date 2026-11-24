@@ -3,10 +3,18 @@ version: 2
 updates:
   - package-ecosystem: docker
     directory: /.devcontainer
+    ignore:
+      - dependency-name: ubuntu
+        versions: ["<26.04", ">=26.05"]
     schedule:
       interval: weekly
 
   - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: devcontainers
     directory: /
     schedule:
       interval: weekly

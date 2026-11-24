@@ -162,8 +162,8 @@ authenticate first with `docker login ghcr.io`.
 
 ## Build and validate locally
 
-Docker with BuildKit and Linux amd64 containers is required. The pinned upstream
-PowerShell worker uses x64 build tools; arm64 builds are not supported.
+Docker with BuildKit and Linux amd64 containers is required. The PowerShell and
+Core Tools downloads target amd64; arm64 builds are not supported.
 
 ```sh
 docker build --progress=plain -f .devcontainer/Dockerfile -t devcontainer:local .
@@ -182,55 +182,51 @@ clean image: installing packages in a running container can make its package-cac
 checks fail. The separate release safeguard tests require `jq`, which is available
 on GitHub's Ubuntu runners but must be installed separately in this devcontainer.
 
-The Dockerfile retains PowerShell 7.6.5 and its seven configured modules, Node
-22.22.2 with nvm, the latest npm/Yarn/pnpm, Azure Static Web Apps CLI (`swa`),
-and native compilation dependencies, GitHub CLI,
-Azure CLI and Bicep, the latest .NET LTS SDK plus the .NET 8 runtime, and Azure
-Functions Core Tools with PowerShell worker 4.0.5362. The base is the official
-`ubuntu:24.04` (Ubuntu 24.04 LTS, Noble Numbat), directly from Ubuntu.
-The Dockerfile supplies the `vscode` user (UID/GID 1000), passwordless sudo,
-git, SSH client, zsh and UTF-8 locale explicitly. Azure CLI uses its native
-Ubuntu 24.04/noble repository. PowerShell and Core Tools use official GitHub
-release downloads to retain the explicitly pinned versions;
-no older Ubuntu feeds are mixed in. Core Tools is pinned to 4.14.0 through
-`CORE_TOOLS_VERSION`.
-The image does not include the Microsoft base's Oh My Zsh customization;
-the existing PowerShell Oh My Posh profile is retained.
+The base is official `ubuntu:26.04` (Ubuntu 26.04 LTS, Resolute Raccoon).
+Ubuntu apt supplies Node.js and npm, the .NET 10 SDK, system utilities and
+browser libraries. The Ubuntu .NET backports PPA supplies the additional .NET 8
+runtime. No NVM, manual Node installation, npm self-upgrade or Oh My Posh is used.
+Azure CLI uses Microsoft's signed resolute repository; GitHub CLI uses its
+signed upstream apt repository.
 
-Validated in the running Ubuntu 24.04 Linux amd64 container: all tool/module smoke
-tests and HTTP invocation through Core Tools 4.14.0 with PowerShell 7.6.5 in the
-worker. The October 2026 validation tested the existing container, not a fresh
-Docker build.
-This verifies this development image; cloud deployment, authenticated Azure
-operations and other Functions languages are outside this test.
-See the [Core Tools installation table](https://github.com/Azure/azure-functions-core-tools#linux).
-The standalone PowerShell installation is described
-in [Microsoft's Ubuntu instructions](https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu).
+PowerShell is installed from an official GitHub release as a standalone deb. Core Tools remains pinned to `CORE_TOOLS_VERSION=4.16.0`, downloaded
+as the official Linux x64 archive with its bundled PowerShell worker. Bicep uses
+the official release binary. PowerShell modules use PowerShell Gallery. These
+installations are not automatically maintained by Dependabot.
 
-Oh My Posh is installed globally. The supplied PowerShell settings script
-initializes it when sourced; automatic profile loading is currently disabled in
-the Dockerfile. The smoke test exercises prompt initialization explicitly, not
-automatic history/profile loading.
-For prompt icons, select a Nerd Font in your local VS Code terminal settings.
-The Node installation upgrades npm first, installs the latest global packages,
-and updates their dependencies on each uncached build. Rebuild the devcontainer
-to use the updated tools; existing containers keep their installed versions.
-The build allows npm installation scripts for Yarn and SWA's native `keytar`
-dependency and includes libsecret plus its compilation prerequisites.
-See the [npm script policy](https://docs.npmjs.com/cli/install/),
-[SWA Linux troubleshooting](https://azure.github.io/static-web-apps-cli/docs/contribute/Troubleshooting/),
-and [Oh My Posh installation](https://ohmyposh.dev/docs/installation/linux).
+Yarn, pnpm and Azure Static Web Apps CLI (`swa`) are installed through Ubuntu's
+npm with engine compatibility checks. Their global prefix is
+`/usr/local/share/npm-global`, owned by `vscode`, so the global npm Feature and
+interactive installs remain writable. Native compilation dependencies for SWA's
+keytar are retained. Feature-specific packages are installed during devcontainer
+creation, separately from the base-image workflow.
 
-Versions are controlled by Dockerfile build arguments. Unpinned packages follow
-their upstream repositories when the corresponding layer is rebuilt; use
-`--pull --no-cache` when explicitly refreshing all upstream tools.
+The image supplies `vscode` (UID/GID 1000), passwordless sudo, git, SSH, zsh and
+UTF-8 locale. The PowerShell settings script retains Azure completion and history
+settings; automatic profile loading remains disabled.
 
-Downloads and package caches are removed in the RUN instruction that creates
-them. The worker is compiled in a separate stage: source, NuGet cache, packaging
-SDK and build-only modules are excluded from the final image. The normal .NET
-SDK and node-gyp dependencies remain available for development. A `.dockerignore`
-limits the build context to image inputs. Docker's local build cache is separate
-from the published image and is intentionally left under the developer's control.
+The build workflow runs functional image tests before publishing: CLI commands,
+module imports, real manual rendering, global npm writes, compilation/execution
+of a .NET console app, and an HTTP-triggered PowerShell function through Core
+Tools. Tests do not assert tool or OS version numbers. A successful version
+command alone does not establish Core Tools compatibility. Authenticated Azure
+operations, deployment and other Functions languages are outside this check.
+
+Dependabot checks Docker images, GitHub Actions and devcontainer Features weekly.
+Ubuntu update proposals are restricted to the 26.04 series. Actions retain major
+tags such as `@v4`; Feature lockfiles record their resolved digests. Apt packages
+refresh during uncached builds rather than through individual Dependabot PRs.
+The separate Feature-publication job keeps its existing Node 22 setup.
+
+Rebuild the devcontainer to consume new packages; existing containers retain
+their installed versions. Use `--pull --no-cache` to refresh upstream inputs.
+Downloads and apt caches are removed in the layer that creates them. Docker's
+local build cache is separate and remains under the developer's control.
+
+References: [Ubuntu .NET installation](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install),
+[PowerShell installation](https://learn.microsoft.com/en-us/powershell/scripting/install/install-ubuntu),
+[Core Tools](https://github.com/Azure/azure-functions-core-tools#linux), and
+[Dependabot for Features](https://containers.dev/guide/dependabot).
 
 Azure CLI's shipped Python bytecode is retained to avoid recompilation on every
 invocation and upstream Python `SyntaxWarning` messages. This costs approximately

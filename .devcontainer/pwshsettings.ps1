@@ -28,6 +28,3 @@ Register-ArgumentCompleter -Native -CommandName az -ScriptBlock {
 # Optioneel: mooie menu-completion op Tab
 Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 Set-PSReadLineOption -HistorySavePath /commandhistory/ConsoleHost_history.txt -HistorySaveStyle SaveIncrementally
-# if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
-#   oh-my-posh init pwsh | Invoke-Expression
-# }
