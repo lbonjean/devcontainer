@@ -11,9 +11,10 @@ def successful_push(event: dict, repository: str) -> dict | None:
     if head["repo"] is None or head["repo"]["full_name"] != repository:
         return None
 
+    # GitHub's status filter can omit completed successful runs. Check status
+    # and conclusion locally instead, after querying the exact PR head.
     query = urlencode({
         "event": "push",
-        "status": "success",
         "head_sha": head["sha"],
         "branch": head["ref"],
         "per_page": 100,
