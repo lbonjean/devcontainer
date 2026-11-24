@@ -59,3 +59,15 @@ ik zou graag de laatste versie van node in deze Docker file zetten
 - Updated `.devcontainer/Dockerfile`'s pinned `NODE_VERSION` from 22.22.2 to 26.13.1, the current stable release listed on the official Node.js download page.
 - `git diff --check` passed. A Docker build was not run because permission was denied.
 - Commit results are recorded after completion.
+
+## PowerShell version update — user request (verbatim)
+
+```text
+ik wil ook powershell op de laatste versie
+```
+
+## Delivered
+
+- Updated `.devcontainer/Dockerfile`'s pinned `POWERSHELL_VERSION` from 7.6.9 to 7.7.0, the latest GA release listed by the official PowerShell release page.
+- `git diff --check` passed. The Docker build was not run because permission was denied during the preceding Node version update.
+- The version update is committed separately; existing uncommitted devcontainer configuration changes were left untouched.
