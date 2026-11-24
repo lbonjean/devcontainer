@@ -82,7 +82,7 @@ ghcr.io/lbonjean/devcontainer:latest
 ```
 
 The GitHub Actions workflow builds and smoke-tests the image before publishing.
-It runs for image/workflow changes, every pull request (without publishing),
+It runs for every branch push, every pull request (without publishing),
 every Monday on the default branch, and manually for a selected branch.
 Builds use `--pull --no-cache` to incorporate upstream updates.
 
@@ -102,7 +102,7 @@ commit or changes made only to the PR base branch.
 | `latest` | Successful builds on `main`, including scheduled/manual builds |
 | `staging` | Successful builds on the separate `staging` branch |
 | `stable` | Manual release or rollback |
-| `2026.11.24.01` | Manual release; never reassigned to different content by the workflow |
+| `2026.11.24.01` | Automatically assigned after a successful main build; never reassigned |
 | `build-<run-id>-<attempt>` | Each published build, including reruns |
 | `branch-<branch>` | Successful builds of that branch (compatibility/testing) |
 
@@ -111,31 +111,41 @@ The image revision label records the Git commit; the build summary records the
 registry digest. Old `sha-<commit>` tags are no longer updated because rebuilding
 the same commit can produce different content.
 
-### Release and rollback
+### Automatic versions and manual stable promotion
 
-After merging these workflows into `main`, create/push a `staging` branch that
-contains them. Develop/test there and merge approved code into `main` as usual.
-The branch must exist remotely for its push/manual builds to run.
+A merge into `main` triggers a clean build and smoke tests. Only after these
+pass, the workflow publishes the unique build tag, assigns an immutable calendar
+tag such as `2026.11.24.01`, and updates `latest` to that same registry digest.
+Scheduled and manually dispatched main builds follow the same rule. Branch and
+pull-request builds do not allocate calendar versions or update `latest`/`stable`.
 
-In **Actions → Release or roll back image → Run workflow**, select **main**:
+Versions use YYYY.MM.DD.NN: the UTC publication date and a daily sequence from
+01 to 99. The allocator skips existing versions with different content and reuses
+an existing tag when retrying the same digest on the same day. A newly built image
+with a different digest gets the next available sequence. After 99 releases in a
+day, publication fails without moving `latest`. Retain all calendar tags: do not
+delete tags and recycle their numbers. Registry/authentication errors fail the
+workflow rather than being treated as available version slots.
 
-1. For a release, choose `release`, enter a version such as `2026.11.24.01`, and select
-   source `staging`, `latest`, or `build-<run-id>-<attempt>`. Prefer the unique build
-   tag when approving a particular tested candidate. Versions have no `v` prefix.
-   Use YYYY.MM.DD.NN: calendar date and a daily sequence from 01 to 99.
-   New releases require this format; rollback also accepts existing legacy tags.
-2. The action resolves the source once and copies its exact registry manifest to
-   `2026.11.24.01` and `stable`, without rebuilding. Repeating the same version/source is
-   safe; using an existing version for different content fails. If staging moved
-   since a previous attempt, use the original unique build tag when retrying.
+`stable` changes only when you approve an image. In **Actions → Release or roll
+back image → Run workflow**, select **main**:
+
+1. Choose `release`, enter an existing calendar version such as `2026.11.24.01`,
+   and set source to that same version to promote it to `stable`.
+2. The action resolves the source once and copies its exact registry manifest,
+   without rebuilding. Repeating the same promotion is safe. Existing calendar
+   tags cannot be assigned different content. For compatibility, a manual release
+   can also name a new calendar tag for `latest`, `staging` or a unique build tag.
 3. For rollback, choose `rollback` and an existing version such as `2026.11.23.01`.
-   Only `stable` moves; `latest`, `staging`, and version tags remain unchanged.
+   Only `stable` moves. Legacy three-component versions remain valid for rollback.
 
 This versions container images; it does not create Git tags or GitHub Releases.
-Release/rollback jobs are serialized. GitHub concurrency may replace an older
-pending run, so check the selected run completed. Retain versioned images and
-their manifests in GHCR: rollback depends on them. This workflow deletes none.
-Tag immutability is enforced by this workflow, not against external registry writes.
+Main builds and manual release/rollback share one concurrency group, serializing
+version allocation and channel updates across both workflows. GitHub concurrency
+may replace an older pending run, so check the selected run completed.
+Retain versioned images and their manifests in GHCR: rollback depends on them.
+These workflows delete none. Tag immutability is enforced by these workflows,
+not against external registry writes; use a digest for an immutable reference.
 
 For daily use choose `ghcr.io/lbonjean/devcontainer:stable`. To pin a release use
 `:2026.11.24.01`, or use `ghcr.io/lbonjean/devcontainer@sha256:<digest>` for exact content.

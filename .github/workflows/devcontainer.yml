@@ -3,12 +3,6 @@ name: Build and publish dev container
 on:
   push:
     branches: ['**']
-    paths:
-      - .devcontainer/**
-      - .dockerignore
-      - .github/workflows/**
-      - .github/scripts/**
-      - examples/powershell-7.6.5/function/**
   pull_request:
   schedule:
     - cron: "17 5 * * 1"
@@ -18,7 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: devcontainer-${{ github.ref }}
+  group: ${{ github.ref == 'refs/heads/main' && 'devcontainer-release' || format('devcontainer-{0}', github.ref) }}
   cancel-in-progress: false
 
 jobs:
@@ -62,9 +56,7 @@ jobs:
             branch_tag="$(printf '%s' "$branch" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9_.-]+/-/g' | cut -c1-100)"
             tags="${tags},branch-${branch_tag}"
 
-            if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-              tags="${tags},latest"
-            elif [[ "${GITHUB_REF}" == "refs/heads/staging" ]]; then
+            if [[ "${GITHUB_REF}" == "refs/heads/staging" ]]; then
               tags="${tags},staging"
             fi
           fi
@@ -105,4 +97,7 @@ jobs:
             docker tag devcontainer:test "${IMAGE_NAME}:${tag}"
             docker push "${IMAGE_NAME}:${tag}"
           done
+          if [[ "$GITHUB_REF" == refs/heads/main ]]; then
+            OPERATION=publish SOURCE="${tags[0]}" bash .github/scripts/image-release.sh
+          fi
           docker buildx imagetools inspect "${IMAGE_NAME}:${tags[0]}" >> "$GITHUB_STEP_SUMMARY"

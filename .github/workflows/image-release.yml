@@ -9,19 +9,19 @@ on:
         options: [release, rollback]
         required: true
       version:
-        description: 'Release YYYY.MM.DD.NN (e.g. 2026.11.24.01); existing tag for rollback'
+        description: 'Version to promote to stable (e.g. 2026.11.24.01); existing tag for rollback'
         type: string
         required: true
       source:
-        description: 'Release source: staging, latest, or build-<run-id>-<attempt> (ignored for rollback)'
+        description: 'Source: calendar version, staging, latest, or build-<run-id>-<attempt> (ignored for rollback)'
         type: string
-        default: staging
+        default: latest
 
 permissions:
   contents: read
   packages: write
 
-# Serialize all stable/version updates, including manual reruns.
+# Share the lock with main builds: serialize all version/channel updates.
 concurrency:
   group: devcontainer-release
   cancel-in-progress: false
