@@ -83,8 +83,6 @@ RUN apt-get update \
         net-tools \
         netcat-openbsd \
         nmap \
-        nodejs \
-        npm \
         software-properties-common \
         openssh-client \
         procps \
@@ -110,16 +108,22 @@ RUN apt-get update \
         | gpg --dearmor --yes -o /etc/apt/keyrings/microsoft.gpg \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
         -o /etc/apt/keyrings/githubcli.gpg \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+        | gpg --dearmor --yes -o /etc/apt/keyrings/nodesource.gpg \
     && chmod 0644 /etc/apt/keyrings/*.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ resolute main" \
         > /etc/apt/sources.list.d/azure-cli.list \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli.gpg] https://cli.github.com/packages stable main" \
         > /etc/apt/sources.list.d/github-cli.list \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" \
+        > /etc/apt/sources.list.d/nodesource.list \
+    && printf '%s\n' 'Package: nodejs' 'Pin: origin deb.nodesource.com' 'Pin-Priority: 600' \
+        > /etc/apt/preferences.d/nodejs \
     && apt-get update \
     && curl -fsSL "https://github.com/PowerShell/PowerShell/releases/download/v${POWERSHELL_VERSION}/powershell_${POWERSHELL_VERSION}-1.deb_amd64.deb" \
         -o /tmp/powershell.deb \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        azure-cli gh /tmp/powershell.deb \
+        azure-cli gh nodejs /tmp/powershell.deb \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -147,7 +151,8 @@ RUN add-apt-repository --yes ppa:dotnet/backports \
         dotnet-sdk-10.0 dotnet-runtime-8.0 libsecret-1-dev pkg-config \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Keep Ubuntu's Node.js and npm. Global developer tools remain writable by vscode.
+# NodeSource supplies Node.js 24 LTS and its bundled npm through apt.
+# Global developer tools remain writable by vscode.
 RUN install -d -o vscode -g vscode "$NPM_CONFIG_PREFIX" \
     && runuser -u vscode -- npm install -g --engine-strict yarn pnpm @azure/static-web-apps-cli \
     && rm -rf /home/vscode/.npm /home/vscode/.cache /tmp/*

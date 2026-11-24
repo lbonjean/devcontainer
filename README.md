@@ -102,7 +102,7 @@ commit or changes made only to the PR base branch.
 | `latest` | Successful builds on `main`, including scheduled/manual builds |
 | `staging` | Successful builds on the separate `staging` branch |
 | `stable` | Manual release or rollback |
-| `1.2.3` | Manual release; never reassigned to different content by the workflow |
+| `2026.11.24.01` | Manual release; never reassigned to different content by the workflow |
 | `build-<run-id>-<attempt>` | Each published build, including reruns |
 | `branch-<branch>` | Successful builds of that branch (compatibility/testing) |
 
@@ -119,15 +119,16 @@ The branch must exist remotely for its push/manual builds to run.
 
 In **Actions → Release or roll back image → Run workflow**, select **main**:
 
-1. For a release, choose `release`, enter a version such as `1.2.3`, and select
+1. For a release, choose `release`, enter a version such as `2026.11.24.01`, and select
    source `staging`, `latest`, or `build-<run-id>-<attempt>`. Prefer the unique build
-   tag when approving a particular tested candidate. Versions have no `v` prefix:
-   MAJOR for incompatible changes, MINOR for additions, PATCH for fixes.
+   tag when approving a particular tested candidate. Versions have no `v` prefix.
+   Use YYYY.MM.DD.NN: calendar date and a daily sequence from 01 to 99.
+   New releases require this format; rollback also accepts existing legacy tags.
 2. The action resolves the source once and copies its exact registry manifest to
-   `1.2.3` and `stable`, without rebuilding. Repeating the same version/source is
+   `2026.11.24.01` and `stable`, without rebuilding. Repeating the same version/source is
    safe; using an existing version for different content fails. If staging moved
    since a previous attempt, use the original unique build tag when retrying.
-3. For rollback, choose `rollback` and an existing version such as `1.2.2`.
+3. For rollback, choose `rollback` and an existing version such as `2026.11.23.01`.
    Only `stable` moves; `latest`, `staging`, and version tags remain unchanged.
 
 This versions container images; it does not create Git tags or GitHub Releases.
@@ -137,7 +138,7 @@ their manifests in GHCR: rollback depends on them. This workflow deletes none.
 Tag immutability is enforced by this workflow, not against external registry writes.
 
 For daily use choose `ghcr.io/lbonjean/devcontainer:stable`. To pin a release use
-`:1.2.3`, or use `ghcr.io/lbonjean/devcontainer@sha256:<digest>` for exact content.
+`:2026.11.24.01`, or use `ghcr.io/lbonjean/devcontainer@sha256:<digest>` for exact content.
 After switching versions or rolling back, recreate the devcontainer with a fresh
 pull (for example `runArgs: ["--pull=always"]`); running containers do not change.
 Consumer-local Features are reapplied and are not covered by the image digest.
@@ -183,9 +184,11 @@ checks fail. The separate release safeguard tests require `jq`, which is availab
 on GitHub's Ubuntu runners but must be installed separately in this devcontainer.
 
 The base is official `ubuntu:26.04` (Ubuntu 26.04 LTS, Resolute Raccoon).
-Ubuntu apt supplies Node.js and npm, the .NET 10 SDK, system utilities and
-browser libraries. The Ubuntu .NET backports PPA supplies the additional .NET 8
-runtime. No NVM, manual Node installation, npm self-upgrade or Oh My Posh is used.
+NodeSource apt supplies Node.js 24 LTS and its bundled npm. The signed
+`node_24.x` repository keeps the major at 24 while picking up new patches at
+build time. Dependabot does not update this apt repository selection. Ubuntu apt
+supplies the .NET 10 SDK, system utilities and browser libraries. The Ubuntu
+.NET backports PPA supplies the additional .NET 8 runtime. No NVM, manual Node binary installation, npm self-upgrade or Oh My Posh is used.
 Azure CLI uses Microsoft's signed resolute repository; GitHub CLI uses its
 signed upstream apt repository.
 
@@ -194,8 +197,8 @@ as the official Linux x64 archive with its bundled PowerShell worker. Bicep uses
 the official release binary. PowerShell modules use PowerShell Gallery. These
 installations are not automatically maintained by Dependabot.
 
-Yarn, pnpm and Azure Static Web Apps CLI (`swa`) are installed through Ubuntu's
-npm with engine compatibility checks. Their global prefix is
+Yarn, pnpm and Azure Static Web Apps CLI (`swa`) are installed through NodeSource's
+bundled npm with engine compatibility checks. Their global prefix is
 `/usr/local/share/npm-global`, owned by `vscode`, so the global npm Feature and
 interactive installs remain writable. Native compilation dependencies for SWA's
 keytar are retained. Feature-specific packages are installed during devcontainer

@@ -35,7 +35,7 @@ else:
 
 
 class ReleaseTests(unittest.TestCase):
-    def run_release(self, operation="release", version="1.2.3", source="staging",
+    def run_release(self, operation="release", version="2026.11.24.01", source="staging",
                     extra=None, denied=""):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -56,20 +56,20 @@ class ReleaseTests(unittest.TestCase):
     def test_release_promotes_exact_source(self):
         result, before, after = self.run_release()
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(after, {**before, "1.2.3": A, "stable": A})
+        self.assertEqual(after, {**before, "2026.11.24.01": A, "stable": A})
 
     def test_repeat_same_release(self):
-        result, _, after = self.run_release(extra={"1.2.3": A})
+        result, _, after = self.run_release(extra={"2026.11.24.01": A})
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(after["stable"], A)
 
     def test_existing_version_cannot_change(self):
-        result, before, after = self.run_release(extra={"1.2.3": B})
+        result, before, after = self.run_release(extra={"2026.11.24.01": B})
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(after, before)
 
     def test_rollback_only_moves_stable(self):
-        result, before, after = self.run_release(operation="rollback", extra={"1.2.3": A})
+        result, before, after = self.run_release(operation="rollback", extra={"2026.11.24.01": A})
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(after, {**before, "stable": A})
 
@@ -79,12 +79,40 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(after, before)
 
     def test_registry_auth_failure_is_not_missing_version(self):
-        result, before, after = self.run_release(denied="1.2.3")
+        result, before, after = self.run_release(denied="2026.11.24.01")
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(after, before)
 
+    def test_padded_date_and_leap_day(self):
+        for version in ("2027.01.05.01", "2028.02.29.99"):
+            with self.subTest(version=version):
+                result, _, after = self.run_release(version=version)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(after[version], A)
+
+    def test_legacy_rollback(self):
+        for version in ("1.2.3", "2026.11.2401"):
+            with self.subTest(version=version):
+                result, before, after = self.run_release(
+                    operation="rollback", version=version, extra={version: A})
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(after, {**before, "stable": A})
+
+    def test_invalid_calendar_release_changes_nothing(self):
+        for version in ("1.2.3", "2026.11.2401", "2026.02.29.01",
+                        "2026.04.31.01", "2026.13.01.01", "2026.00.01.01",
+                        "2026.01.00.01", "2026.1.05.01", "2026.01.5.01",
+                        "2026.01.05.00", "2026.01.05.1", "2026.01.05.100"):
+            for operation in ("release", "rollback"):
+                if operation == "rollback" and version.count(".") == 2:
+                    continue
+                with self.subTest(version=version, operation=operation):
+                    result, before, after = self.run_release(version=version, operation=operation)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertEqual(after, before)
+
     def test_bad_inputs_change_nothing(self):
-        for kwargs in ({"version": "v1.2.3"}, {"version": "01.2.3"},
+        for kwargs in ({"version": "v2026.11.24.01"}, {"version": "02026.11.24.01"},
                        {"source": "stable"}, {"source": "$(touch nope)"},
                        {"operation": "delete"}):
             with self.subTest(**kwargs):
