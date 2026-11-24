@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlsplit
 
 import check_push_test
 
@@ -39,6 +40,16 @@ class PushReuseTests(unittest.TestCase):
         self.assertIn(f"head_sha={SHA}", args[4])
         self.assertIn("event=push", args[4])
         self.assertIn("branch=ubuntu2404", args[4])
+        self.assertNotIn("status", parse_qs(urlsplit(args[4]).query))
+
+    def test_mixed_results_reuse_only_completed_success(self):
+        result, _ = self.lookup([{"workflow_runs": [
+            {**RUN, "conclusion": "failure"},
+            {**RUN, "status": "in_progress", "conclusion": None},
+            {**RUN, "conclusion": "cancelled"},
+            RUN,
+        ]}])
+        self.assertEqual(result, RUN)
 
     def test_no_push_builds_pr(self):
         self.assertIsNone(self.lookup([{"workflow_runs": []}])[0])

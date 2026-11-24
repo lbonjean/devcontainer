@@ -91,6 +91,8 @@ workflow has a completed, successful **push** run for the exact PR head SHA and
 branch. If so, it reuses that result and skips rebuilding and smoke-testing the
 image; the existing `Build dev container` check still succeeds and links the
 reused run in its summary. Workflow safeguard unit tests always run.
+The lookup filters by push event, branch and commit, then checks completion and
+success locally: GitHub's API status filter can omit a successful run.
 New commits, missing/failed/in-progress push runs, and fork PRs receive the full
 PR build and smoke test. API errors fail explicitly rather than skipping tests.
 Push, scheduled and manual runs always build/test; PR runs never publish.
