@@ -77,6 +77,13 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(after, {**before, "latest": A})
 
+    def test_retry_reuses_matching_digest_after_unused_slot(self):
+        result, before, after = self.run_release(
+            operation="publish", source="build-42-1",
+            extra={"build-42-1": A, "2026.11.24.02": A})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(after, {**before, "latest": A})
+
     def test_daily_sequence_exhaustion_changes_nothing(self):
         result, before, after = self.run_release(
             operation="publish", source="build-42-1",

@@ -52,6 +52,7 @@ trap 'rm -f "$error_file"' EXIT
 if [[ "$OPERATION" == publish ]]; then
     release_date="$(date -u +%Y.%m.%d)"
     VERSION=''
+    first_free=''
     # Main builds and manual release/rollback share one workflow concurrency group.
     # Never delete/recycle date tags. A retry reuses the same digest's date tag.
     for sequence in $(seq 1 99); do
@@ -62,13 +63,13 @@ if [[ "$OPERATION" == publish ]]; then
                 break
             fi
         elif grep -Eqi 'manifest unknown|MANIFEST_UNKNOWN|not found' "$error_file"; then
-            VERSION="$candidate"
-            break
+            if [[ -z "$first_free" ]]; then first_free="$candidate"; fi
         else
             cat "$error_file" >&2
             exit 1
         fi
     done
+    if [[ -z "$VERSION" ]]; then VERSION="$first_free"; fi
     [[ -n "$VERSION" ]] || {
         echo 'All 99 calendar release slots for today are already used.' >&2; exit 1;
     }
