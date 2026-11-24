@@ -36,7 +36,7 @@ else:
 
 class ReleaseTests(unittest.TestCase):
     def run_release(self, operation="release", version="2026.11.24.01", source="staging",
-                    extra=None, denied=""):
+                    extra=None, denied="", ref="refs/heads/main", event="push"):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             docker = root / "docker"
@@ -48,10 +48,75 @@ class ReleaseTests(unittest.TestCase):
             env = dict(os.environ, PATH=f"{root}:{os.environ['PATH']}",
                        REGISTRY=str(registry), GITHUB_REPOSITORY="Owner/Image",
                        GITHUB_STEP_SUMMARY=str(root / "summary"),
-                       OPERATION=operation, VERSION=version, SOURCE=source, DENIED=denied)
+                       OPERATION=operation, VERSION=version, SOURCE=source, DENIED=denied,
+                       GITHUB_REF=ref, GITHUB_EVENT_NAME=event)
+            date = root / "date"
+            date.write_text('#!/bin/bash\nif [[ "$*" == "-u +%Y.%m.%d" ]]; then echo 2026.11.24; else exec /usr/bin/date "$@"; fi\n')
+            date.chmod(0o755)
             result = subprocess.run(["bash", str(SCRIPT)], env=env,
                                     capture_output=True, text=True)
             return result, state, json.loads(registry.read_text())
+
+    def test_main_build_publishes_date_and_latest_without_stable(self):
+        result, before, after = self.run_release(
+            operation="publish", source="build-42-1", extra={"build-42-1": A})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(after, {**before, "2026.11.24.01": A, "latest": A})
+
+    def test_next_build_increments_daily_sequence(self):
+        result, before, after = self.run_release(
+            operation="publish", source="build-42-1",
+            extra={"build-42-1": A, "2026.11.24.01": B})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(after, {**before, "2026.11.24.02": A, "latest": A})
+
+    def test_retry_reuses_date_tag_for_same_digest(self):
+        result, before, after = self.run_release(
+            operation="publish", source="build-42-1",
+            extra={"build-42-1": A, "2026.11.24.01": A})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(after, {**before, "latest": A})
+
+    def test_daily_sequence_exhaustion_changes_nothing(self):
+        result, before, after = self.run_release(
+            operation="publish", source="build-42-1",
+            extra={"build-42-1": A, **{f"2026.11.24.{n:02}": B for n in range(1, 100)}})
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("99", result.stderr)
+        self.assertEqual(after, before)
+
+    def test_auto_registry_error_does_not_allocate_or_update_latest(self):
+        result, before, after = self.run_release(
+            operation="publish", source="build-42-1", extra={"build-42-1": A},
+            denied="2026.11.24.01")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(after, before)
+
+    def test_auto_publish_requires_unique_build_source(self):
+        result, before, after = self.run_release(operation="publish", source="latest")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(after, before)
+
+    def test_auto_publish_rejects_branches_and_pull_requests(self):
+        for kwargs in ({"ref": "refs/heads/feature"}, {"event": "pull_request"}):
+            with self.subTest(**kwargs):
+                result, before, after = self.run_release(
+                    operation="publish", source="build-42-1", extra={"build-42-1": A}, **kwargs)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(after, before)
+
+    def test_new_day_starts_at_first_sequence(self):
+        result, before, after = self.run_release(
+            operation="publish", source="build-42-1",
+            extra={"build-42-1": A, "2026.11.23.99": B})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(after, {**before, "2026.11.24.01": A, "latest": A})
+
+    def test_manual_stable_promotion_from_calendar_version(self):
+        result, before, after = self.run_release(
+            source="2026.11.24.01", extra={"2026.11.24.01": A})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(after, {**before, "stable": A})
 
     def test_release_promotes_exact_source(self):
         result, before, after = self.run_release()
