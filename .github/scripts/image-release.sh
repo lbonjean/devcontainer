@@ -2,10 +2,19 @@
 set -euo pipefail
 
 image="ghcr.io/${GITHUB_REPOSITORY,,}"
-[[ "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || {
-    echo 'Version must be MAJOR.MINOR.PATCH without a v prefix or leading zeros.' >&2
-    exit 1
+# New releases use a real calendar date and a daily sequence from 01 to 99.
+# Rollback also accepts the legacy three-component version tags.
+valid_calendar_version() {
+    [[ "$VERSION" =~ ^([0-9]{4})\.([0-9]{2})\.([0-9]{2})\.(0[1-9]|[1-9][0-9])$ ]] || return 1
+    local release_date="${BASH_REMATCH[1]}-${BASH_REMATCH[2]}-${BASH_REMATCH[3]}"
+    [[ "$(date -u --date="$release_date" +%Y-%m-%d 2>/dev/null)" == "$release_date" ]]
 }
+if ! valid_calendar_version; then
+    if [[ "$OPERATION" != rollback || ! "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+        echo 'Version must be YYYY.MM.DD.NN with a valid date and sequence 01-99 (e.g. 2026.11.24.01). Legacy versions are accepted only for rollback.' >&2
+        exit 1
+    fi
+fi
 case "$OPERATION" in
     release)
         [[ "$SOURCE" =~ ^(staging|latest|build-[0-9]+-[0-9]+)$ ]] || {

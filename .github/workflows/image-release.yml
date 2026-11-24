@@ -9,7 +9,7 @@ on:
         options: [release, rollback]
         required: true
       version:
-        description: 'Release version (e.g. 1.2.3); existing version for rollback'
+        description: 'Release YYYY.MM.DD.NN (e.g. 2026.11.24.01); existing tag for rollback'
         type: string
         required: true
       source:

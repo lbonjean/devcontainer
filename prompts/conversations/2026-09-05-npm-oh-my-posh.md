@@ -47,3 +47,40 @@ powershell geralteerd:
 - Remaining upstream warnings: SWA transitive dependencies include deprecated prebuild-install, inflight, glob, rimraf and sudo-prompt; Azure CLI emits its existing experimental config and Python SyntaxWarnings. Interactive Bash smoke check emits expected no-TTY job-control warnings. Corepack downloaded its Yarn/pnpm distributions during first execution.
 - PowerShell syntax validation and final `git diff --check` passed. Temporary build/smoke output files removed after summarizing. Durable bootstrap/script-policy findings added to LESSONS_LEARNED.md.
 - Delivered: updated packages and prompt setup are committed locally; rebuild/recreate the devcontainer to consume changes. No push or publication performed.
+
+## Node version update — user request (verbatim)
+
+```text
+ik zou graag de laatste versie van node in deze Docker file zetten
+```
+
+## Delivered
+
+- Updated `.devcontainer/Dockerfile`'s pinned `NODE_VERSION` from 22.22.2 to 26.13.1, the current stable release listed on the official Node.js download page.
+- `git diff --check` passed. A Docker build was not run because permission was denied.
+- Commit results are recorded after completion.
+
+## PowerShell version update — user request (verbatim)
+
+```text
+ik wil ook powershell op de laatste versie
+```
+
+## Delivered
+
+- Updated `.devcontainer/Dockerfile`'s pinned `POWERSHELL_VERSION` from 7.6.9 to 7.7.0, the latest GA release listed by the official PowerShell release page.
+- `git diff --check` passed. The Docker build was not run because permission was denied during the preceding Node version update.
+- The version update is committed separately; existing uncommitted devcontainer configuration changes were left untouched.
+
+## Switch PowerShell to LTS — user request (verbatim)
+
+```text
+is er van dit node en powershell geen lts versie?
+ik zou die graag in de file zetten als lts, in tegenstelling met de instructies
+```
+
+## Correction and validation
+
+- Corrected `POWERSHELL_VERSION` from the 7.7.0 STS release to 7.6.10, the latest PowerShell LTS release. Node 26.13.1 is already LTS and remains unchanged.
+- Confirmed the v7.6.10 release and its Linux amd64 Debian package in the official PowerShell release metadata.
+- `git diff --check` passed. A Docker build was not run because permission was denied earlier.
